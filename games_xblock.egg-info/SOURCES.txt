@@ -1,0 +1,13 @@
+setup.py
+games/__init__.py
+games/games.py
+games/static/README.txt
+games/static/css/games.css
+games/static/html/games.html
+games/static/js/src/games.js
+games_xblock.egg-info/PKG-INFO
+games_xblock.egg-info/SOURCES.txt
+games_xblock.egg-info/dependency_links.txt
+games_xblock.egg-info/entry_points.txt
+games_xblock.egg-info/requires.txt
+games_xblock.egg-info/top_level.txt
