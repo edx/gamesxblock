@@ -1,9 +1,14 @@
+LICENSE
+README.md
 setup.py
 games/__init__.py
 games/games.py
 games/static/README.txt
 games/static/css/games.css
 games/static/html/games.html
+games/static/img/close_button.png
+games/static/img/navigate_left.png
+games/static/img/navigate_right.png
 games/static/js/src/games.js
 games_xblock.egg-info/PKG-INFO
 games_xblock.egg-info/SOURCES.txt
