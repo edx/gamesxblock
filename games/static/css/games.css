@@ -105,6 +105,57 @@
     cursor: pointer;
 }
 
+.help {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.help-outline {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.tooltip {
+    width: 600%;
+    position: absolute;
+    bottom: 140%;
+    right: -250%;
+}
+
+.tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -8px;
+    border-width: 8px;
+    border-style: solid;
+    border-color: var(--core-elm, #00262B) transparent transparent transparent;
+}
+
+.tooltip-text {
+    color: var(--extras-white, #FFF);
+    text-align: center;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+
+    display: flex;
+    padding: 4px 8px;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+
+    border-radius: 4px;
+    background: var(--core-elm, #00262B);
+}
+
 /*Flashcard styles--------------------------------------------------------------*/
 .flashcard-top {
     display: flex;
@@ -211,92 +262,3 @@
 }
 
 /*Matching styles--------------------------------------------------------------*/
-
-
-
-/*TOOLTIP styles(move to universal later)--------------------------------------------------------------*/
-/*
-.tooltip {
-    width: fit-content;
-    height: fit-content;
-    position: relative;
-    bottom: 100%;
-    left: -50%;
-    box-sizing: border-box;
-    padding: 0px;
-}
-
-for the triangle
-.tooltip::after {
-    content: "";
-    position: absolute;
-    top: 92%;
-    left: 50%;
-    margin-left: -8px;
-    border-width: 8px;
-    border-style: solid;
-    border-color: var(--core-elm, #00262B) transparent transparent transparent;
-}
-*/
-
-.help {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.help-outline {
-    position: relative;
-    width: 24px;
-    height: 24px;
-    cursor: pointer;
-}
-
-.tooltip {
-    width: 600%;
-    position: absolute;
-    bottom: 140%;
-    right: -250%;
-}
-
-.tooltip::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -8px;
-    border-width: 8px;
-    border-style: solid;
-    border-color: var(--core-elm, #00262B) transparent transparent transparent;
-}
-
-.tooltip-text {
-    color: var(--extras-white, #FFF);
-    text-align: center;
-    font-family: Inter;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 20px;
-
-    display: flex;
-    padding: 4px 8px;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-
-    border-radius: 4px;
-    background: var(--core-elm, #00262B);
-
-
-}
-
-/*
-.tooltip-polygon {
-    width: 13.856px;
-    height: 9px;
-
-    fill: var(--core-elm, #00262B);
-}
-*/

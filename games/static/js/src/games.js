@@ -11,7 +11,7 @@ function GamesXBlock(runtime, element) {
         var title = "<div class='title-persistent'></div>";
         var closeButton = "<div class='close-button'></div>";
         var closeBackground = "<div class='close-background'></div>";
-        var closeImage = "<img class='close-image'>";
+        var closeImage = "<svg class='close-image' xmlns='http://www.w3.org/2000/svg' width='24' height='25' viewBox='0 0 24 25' fill='none'><path d='M19 6.71078L17.59 5.30078L12 10.8908L6.41 5.30078L5 6.71078L10.59 12.3008L5 17.8908L6.41 19.3008L12 13.7108L17.59 19.3008L19 17.8908L13.41 12.3008L19 6.71078Z' fill='#707070'/></svg>"
         var startBlock = "<div class='start-block'></div>";
         var description = "<div class='flashcard-description'></div>";
 
@@ -28,7 +28,6 @@ function GamesXBlock(runtime, element) {
         $('.flashcard-top', element).append(closeButton);
         $('.close-button', element).append(closeBackground);
         $('.close-background', element).append(closeImage);
-        $('.close-image', element).attr("src", "/games/games/static/img/close_button.png");
         $('.background-block', element).append(startBlock);
         $('.start-block', element).append(description);
         $('.flashcard-description', element).text(fullView.description);
@@ -104,16 +103,14 @@ function GamesXBlock(runtime, element) {
         var text = "<div class='flashcard-text'></div>";
         var footer = "<div class='flashcard-footer'></div>";
         var spacer = "<div class='spacer'></div>";
-
         var help = "<div class='help'></div>";
         var helpOutline = "<div class='help-outline'><svg xmlns='http://www.w3.org/2000/svg' width='24' height='25' viewBox='0 0 24 25' fill='none'><g clip-path='url(#clip0_7867_247475)'><path d='M11 18.3008H13V16.3008H11V18.3008ZM12 2.30078C6.48 2.30078 2 6.78078 2 12.3008C2 17.8208 6.48 22.3008 12 22.3008C17.52 22.3008 22 17.8208 22 12.3008C22 6.78078 17.52 2.30078 12 2.30078ZM12 20.3008C7.59 20.3008 4 16.7108 4 12.3008C4 7.89078 7.59 4.30078 12 4.30078C16.41 4.30078 20 7.89078 20 12.3008C20 16.7108 16.41 20.3008 12 20.3008ZM12 6.30078C9.79 6.30078 8 8.09078 8 10.3008H10C10 9.20078 10.9 8.30078 12 8.30078C13.1 8.30078 14 9.20078 14 10.3008C14 12.3008 11 12.0508 11 15.3008H13C13 13.0508 16 12.8008 16 10.3008C16 8.09078 14.21 6.30078 12 6.30078Z' fill='#00262B'/></g><defs><clipPath id='clip0_7867_247475'><rect width='24' height='24' fill='white' transform='translate(0 0.300781)'/></clipPath></defs></svg></div>";
-
         var navigation = "<div class='flashcard-navigation'></div>";
         var left = "<div class='flashcard-left-button'></div>";
-        var leftImage = "<img class='flashcard-left-image'>";
+        var leftImage = "<svg class='flashcard-left-image' xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 25 25' fill='none'><g clip-path='url(#clip0_7867_247470)'><path d='M14.4796 18.3008L15.8896 16.8908L11.3096 12.3008L15.8896 7.71078L14.4796 6.30078L8.47965 12.3008L14.4796 18.3008Z' fill='#00262B'/></g><defs><clipPath id='clip0_7867_247470'><rect width='24' height='24' fill='white' transform='translate(24.5 24.3008) rotate(-180)'/></clipPath></defs></svg>";
         var navText = "<div class='flashcard-navigation-text'></div>";
         var right = "<div class='flashcard-right-button'></div>";
-        var rightImage = "<img class='flashcard-right-image'>";
+        var rightImage = "<svg class='flashcard-right-image' xmlns='http://www.w3.org/2000/svg' width='25' height='25' viewBox='0 0 25 25' fill='none'><g clip-path='url(#clip0_7867_247473)'><path d='M10.5204 6.30078L9.11035 7.71078L13.6904 12.3008L9.11035 16.8908L10.5204 18.3008L16.5204 12.3008L10.5204 6.30078Z' fill='#00262B'/></g><defs><clipPath id='clip0_7867_247473'><rect width='24' height='24' fill='white' transform='translate(0.5 0.300781)'/></clipPath></defs></svg>";
 
         $('.background-block', element).append(flashcardBlock);
         $('.flashcard-block', element).append(firstImage);
@@ -123,18 +120,14 @@ function GamesXBlock(runtime, element) {
         $('.background-block', element).append(footer);
         $('.flashcard-footer', element).append(spacer);
         $('.flashcard-footer', element).append(navigation);
-
         $('.flashcard-footer', element).append(help);
         $('.help', element).append(helpOutline);
-
         $('.flashcard-navigation', element).append(left);
         $('.flashcard-left-button', element).append(leftImage);
-        $('.flashcard-left-image', element).attr("src", "/games/games/static/img/navigate_left.png");
         $('.flashcard-navigation', element).append(navText);
         $('.flashcard-navigation-text', element).text("1" + " / " + firstCard.list_length);
         $('.flashcard-navigation', element).append(right);
         $('.flashcard-right-button', element).append(rightImage);
-        $('.flashcard-right-image', element).attr("src", "/games/games/static/img/navigate_right.png");
     }
 
     $(document).on('click', '.start-button-flashcards', function(eventObject) {
@@ -222,6 +215,12 @@ function GamesXBlock(runtime, element) {
         /* Here's where you'd do things on page load. */
     });
 }
+
+
+
+
+
+
 
 //Old stuff - no longer has a purpose. Will delete once editor view is complete.
 /*
