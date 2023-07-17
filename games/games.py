@@ -227,14 +227,11 @@ class GamesXBlock(XBlock):
         A handler to flip the flashcard from term to definition
         and vice versa.
         """
-
-        #flip term_is_visible first to show definition
-        self.term_is_visible = not(self.term_is_visible)
-
-        #term_is_visible has already been flipped, so the conditional evaluates the original value by flipping it again
-        #When reviewing this logic, pretend that the not() function below is not there since term_is_visible was already flipped once above
-        if not(self.term_is_visible):
+        if self.term_is_visible:
+            self.term_is_visible = not(self.term_is_visible)
             return {'image': self.list[self.list_index]['definition_image'], 'text': self.list[self.list_index]['definition']}
+        
+        self.term_is_visible = not(self.term_is_visible)
         return {'image': self.list[self.list_index]['term_image'], 'text': self.list[self.list_index]['term']}
 
     @XBlock.json_handler
