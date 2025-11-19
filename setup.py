@@ -1,8 +1,6 @@
 """Setup for games XBlock."""
 
-
 import os
-
 from setuptools import setup
 
 
@@ -11,7 +9,6 @@ def package_data(pkg, roots):
 
     All of the files under each of the `roots` will be declared as package
     data for package `pkg`.
-
     """
     data = []
     for root in roots:
@@ -23,20 +20,25 @@ def package_data(pkg, roots):
 
 
 setup(
-    name='games-xblock',
-    version='0.1',
-    description='games XBlock',   # TODO: write a better description.
-    license='UNKNOWN',          # TODO: choose a license: 'AGPL v3' and 'Apache 2.0' are popular.
+    name="games",
+    version="1.0.0",
+    description="Interactive games XBlock for Open edX - Create flashcards and matching games with image support",
+    author="edX",
+    author_email="edx@edx.org",
+    url="https://github.com/edx/gamesxblock",
+    license="AGPL v3",
     packages=[
-        'games',
+        "games",
     ],
     install_requires=[
-        'XBlock',
+        "XBlock>=1.2.0",
+        "web-fragments>=0.3.0",
+        "Django>=2.2",
     ],
     entry_points={
-        'xblock.v1': [
-            'games = games:GamesXBlock',
+        "xblock.v1": [
+            "games = games.games:GamesXBlock",
         ]
     },
-    package_data=package_data("games", ["static", "public"]),
+    package_data=package_data("games", ["static", "public", "translations"]),
 )

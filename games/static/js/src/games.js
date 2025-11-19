@@ -18,7 +18,7 @@ function GamesXBlock(runtime, element) {
         var description = "<div class='game-description'></div>";
 
         //Depending on the game type, add the respective start button; add new cases for new game types
-        switch(fullView.type){
+        switch(fullView.game_type){
             case 'flashcards': var startButton = "<div class='start-button-flashcards'>Start</div>"; break;
             case 'matching': var startButton = "<div class='start-button-matching'>Start</div>"; break;
             default: var startButton = "<div>ERR: invalid type</div>";
@@ -288,26 +288,26 @@ function GamesXBlock(runtime, element) {
         //returns as a string formatted as (HH:M)M:SS, where (HH:M) only appear if they are relevant
         return hours + minutes + seconds;
     }
-    function updateTimer(newTime) {
-        //Function to update the timer
+    // function updateTimer(newTime) {
+    //     //Function to update the timer
 
-        //do nothing until the game starts
-        if (!newTime.game_started)
-            return;
-        $('.matching-timer', element).text(formatTime(newTime.value));
-    }
-    $(document).ready(function() {
-        //Update the timer every 1000 ms
-        setInterval(function() {
-            $.ajax({
-                type: "POST",
-                url: runtime.handlerUrl(element, 'update_timer'),
-                data: JSON.stringify({}),
-                cache: false,
-                success: updateTimer
-            });
-        }, 1000);
-    });
+    //     //do nothing until the game starts
+    //     if (!newTime.game_started)
+    //         return;
+    //     $('.matching-timer', element).text(formatTime(newTime.value));
+    // }
+    // $(document).ready(function() {
+    //     //Update the timer every 1000 ms
+    //     setInterval(function() {
+    //         $.ajax({
+    //             type: "POST",
+    //             url: runtime.handlerUrl(element, 'update_timer'),
+    //             data: JSON.stringify({}),
+    //             cache: false,
+    //             success: updateTimer
+    //         });
+    //     }, 1000);
+    // });
 
     //Select Container
     function selectContainer(selected) {
@@ -547,10 +547,58 @@ function GamesXBlock(runtime, element) {
         });
     });
 
-    return {};
+    // return {};
+    function loadCards() {
+        $.ajax({
+            type: "POST",
+            url: runtime.handlerUrl(element, 'get_settings'),
+            data: JSON.stringify({}),
+            success: function(response) {
+                console.log('Cards loaded:', response);
+                displayCards(response);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading cards:', error);
+                $('.games-container', element).html('<p class="error">Failed to load cards</p>');
+            }
+        });
+    }
+
+    function displayCards(data) {
+        var container = $('.games-container', element);
+        var html = '';
+        
+        if (!data.cards || data.cards.length === 0) {
+            html = '<p class="no-cards">No cards available yet. Add cards in the Studio editor.</p>';
+        } else {
+            html += '<h3>Game Type: ' + data.game_type + '</h3>';
+            html += '<div class="cards-list">';
+            
+            data.cards.forEach(function(card, index) {
+                html += '<div class="card-item">';
+                html += '<div class="card-number">Card ' + (index + 1) + '</div>';
+                
+                if (card.term_image) {
+                    html += '<div class="card-image"><img src="' + card.term_image + '" alt="Term image"></div>';
+                }
+                html += '<div class="card-term"><strong>Term:</strong> ' + card.term + '</div>';
+                
+                if (card.definition_image) {
+                    html += '<div class="card-image"><img src="' + card.definition_image + '" alt="Definition image"></div>';
+                }
+                html += '<div class="card-definition"><strong>Definition:</strong> ' + card.definition + '</div>';
+                
+                html += '</div>';
+            });
+            
+            html += '</div>';
+        }
+        
+        container.html(html);
+    }
 
     $(function ($) {
-        /* Here's where you'd do things on page load. */
+        loadCards();
     });
 }
 

@@ -1,7 +1,14 @@
 """An XBlock providing gamification capabilities."""
+import hashlib
+import random
+import string
+
 import pkg_resources
 from web_fragments.fragment import Fragment
-from xblock.core import XBlock
+from xblock.core import Response, XBlock
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+from xblock.fields import Integer, Scope, String, Boolean, List, Dict
 
 #May need to import more or less field types later (https://github.com/openedx/XBlock/blob/master/xblock/fields.py)
 from xblock.fields import Integer, Scope, String, Boolean, List, Dict
@@ -19,98 +26,30 @@ class GamesXBlock(XBlock):
 
     The editor view will allow course authors to create and manipulate the games.
     """
-
-    #Universal fields------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     title = String(
         default="Matching", 
         scope=Scope.content, 
         help="The title of the block to be displayed in the xblock."
     )
+    display_name = String(
+        default="Games", scope=Scope.settings, help="Display name for this XBlock"
+    )
 
     #Change default to 'matching' for matching game and 'flashcards' for flashcards game to test
-    type = String(
+    game_type = String(
         default="matching", 
         scope=Scope.settings, 
         help="The kind of game this xblock is responsible for ('flashcards' or 'matching' for now)."
     )
 
-    #Matching and flashcards will use the same list, but term_image and definition_image will only be used in flashcards
-    #DUMMY DATA
-    list = List(
-        default=[
-            {
-                'term_image': 'https://studio.stage.edx.org/static/studio/edx.org-next/images/studio-logo.005b2ebe0c8b.png',
-                'definition_image': 'https://logos.openedx.org/open-edx-logo-tag.png',
-                'term': 'Term 1', 
-                'definition': 'The definition of term 1 (moderate character length).'
-            },
-            {
-                'term_image': None, 
-                'definition_image': None,
-                'term': 'T2', 
-                'definition': 'Def of T2 - short.'
-            },
-            {
-                'term_image': 'https://logos.openedx.org/open-edx-logo-tag.png',
-                'definition_image': 'https://studio.stage.edx.org/static/studio/edx.org-next/images/studio-logo.005b2ebe0c8b.png',
-                'term': 'The Third Term', 
-                'definition': 'The definition of term 3. This one is far longer for testing purposes, so long in fact that it should certainly warrant a new line.'
-            },
-            {
-                'term_image': None,
-                'definition_image': None,
-                'term': 'T4',
-                'definition': 'D4'
-            },
-            {
-                'term_image': None,
-                'definition_image': None,
-                'term': 'T5',
-                'definition': 'D5'
-            },
-            {
-                'term_image': None,
-                'definition_image': None,
-                'term': 'T6',
-                'definition': 'D6'
-            },
-            {
-                'term_image': None,
-                'definition_image': None,
-                'term': 'T7',
-                'definition': 'D7'
-            },
-            {
-                'term_image': None,
-                'definition_image': None,
-                'term': 'T8',
-                'definition': 'D8'
-            },
-            {
-                'term_image': None,
-                'definition_image': None,
-                'term': 'T9',
-                'definition': 'D9'
-            },
-            {
-                'term_image': None,
-                'definition_image': None,
-                'term': 'T10',
-                'definition': 'D10'
-            },
-            {
-                'term_image': None,
-                'definition_image': None,
-                'term': 'T11',
-                'definition': 'D11'
-            }
-        ],
+    cards = List(
+        default=[],
         scope=Scope.content,
         help="The list of terms and definitions."
     )
 
     list_length = Integer(
-        default=len(list.default),
+        default=len(cards.default),
         scope=Scope.content,
         help="A field for the length of the list for convenience."
     )
@@ -119,41 +58,10 @@ class GamesXBlock(XBlock):
     list_index = Integer(
         default=0,
         scope=Scope.settings,
-        help="Determines which flashcard from the list is currently visible."
+        help="The type of game: 'flashcards' or 'matching'",
     )
 
-    term_is_visible = Boolean(
-        default=True,
-        scope=Scope.settings,
-        help="True when the term is visible and false when the definition is visible in the flashcards game."
-    )
-
-    #Matching game fields------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    best_time = Integer(
-        default=None, 
-        scope=Scope.user_info, 
-        help="The user's best time for the matching game."
-    )
-
-    game_started = Boolean(
-        default = False,
-        scope=Scope.settings,
-        help="Bool variable to allow the timer to start from 0 after the game starts."
-    )
-
-    time_seconds = Integer(
-        default=0,
-        scope=Scope.user_info,
-        help="The current time elapsed in seconds since starting the matching game."
-    )
-
-    selected_containers = Dict(
-        default={},
-        scope=Scope.settings,
-        help="A dictionary to keep track of selected containers for the matching game."
-    )
-
-    matching_id_list = List(
+    cards = List(
         default=[],
         scope=Scope.settings,
         help="A list of all the matching game ids."
@@ -184,18 +92,18 @@ class GamesXBlock(XBlock):
     )
 
     matches_remaining = Integer(
-        default = len(list.default),
+        default = len(cards.default),
         scope=Scope.content,
-        help = "The number of matches that remain in the list."
+        help="The list of terms and definitions."
+    )
+    is_shuffled = Boolean(
+        default=False,
+        scope=Scope.settings,
+        help="Whether the cards should be shuffled"
     )
 
     '''
     #Following fields for editor only------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    shuffle = Boolean(
-        default=True, 
-        scope=Scope.settings, 
-        help="Whether to shuffle or not. For flashcards only?"
-    )
     timer = Boolean(
         default=True, 
         scope=Scope.settings, 
@@ -203,7 +111,6 @@ class GamesXBlock(XBlock):
     )
     '''
 
-    #Important functions (unmodified from xblock installation)------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
@@ -219,7 +126,6 @@ class GamesXBlock(XBlock):
         frag.add_css(self.resource_string("static/css/games.css"))
         frag.add_javascript(self.resource_string("static/js/src/games.js"))
         frag.initialize_js('GamesXBlock')
-        #frag.initialize_js('FlashcardsXBlock')
         return frag
     
     #Universal handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -228,16 +134,114 @@ class GamesXBlock(XBlock):
         """
         A handler to expand the game from its title block.
         """
-        description = "ERR: self.type not defined or invalid"
-        if self.type == "flashcards":
+        description = "ERR: self.game_type not defined or invalid"
+        if self.game_type == "flashcards":
             description = "Click each card to reveal the definition"
-        elif self.type == "matching":
+        elif self.game_type == "matching":
             description = "Match each term with the correct definition"
         return {
             'title': self.title,
             'description': description,
-            'type': self.type
+            'game_type': self.game_type
         }
+    
+    @XBlock.json_handler
+    def get_settings(self, data, suffix=""):
+        """
+        A handler to get settings.
+        Get game type, cards, and shuffle setting in one call.
+        """
+        return {
+            "game_type": self.game_type,
+            "cards": self.cards,
+            "is_shuffled": self.is_shuffled,
+        }
+
+    @XBlock.handler
+    def upload_image(self, request, suffix=""):
+        """
+        Upload an image file and return the URL.
+        """
+        try:
+            upload_file = request.params["file"].file
+            file_name = request.params["file"].filename
+            file_hash = hashlib.md5(upload_file.read()).hexdigest()
+            upload_file.seek(0)
+            _, ext = (
+                file_name.rsplit(".", 1) if "." in file_name else (file_name, "jpg")
+            )
+            file_path = f"games/{self.scope_ids.usage_id.block_id}/{file_hash}.{ext}"
+            saved_path = default_storage.save(
+                file_path, ContentFile(upload_file.read())
+            )
+            file_url = default_storage.url(saved_path)
+            return Response(
+                json_body={"success": True, "url": file_url, "filename": file_name}
+            )
+        except Exception as e:
+            return Response(json_body={"success": False, "error": str(e)}, status=400)
+        
+    @XBlock.json_handler
+    def save_settings(self, data, suffix=""):
+        """
+        Save game type, shuffle setting, and all cards in one API call.
+        Expected data format:
+        {
+            'game_type': 'flashcards' or 'matching',
+            'is_shuffled': true or false,
+            'cards': [
+                {
+                    'term': 'Term 1',
+                    'term_image': 'http://...',
+                    'definition': 'Definition 1',
+                    'definition_image': 'http://...'
+                },
+                ...
+            ]
+        }
+        """
+        try:
+            new_game_type = data.get("game_type", "flashcards")
+            new_is_shuffled = data.get("is_shuffled", False)
+            new_cards = data.get("cards", [])
+
+            validated_cards = []
+            for card in new_cards:
+                if not isinstance(card, dict):
+                    return {"success": False, "error": "Each card must be an object"}
+
+                # Validate required fields
+                if "term" not in card or "definition" not in card:
+                    return {
+                        "success": False,
+                        "error": "Each card must have term and definition",
+                    }
+
+                validated_cards.append(
+                    {
+                        "term": card.get("term", ""),
+                        "term_image": card.get("term_image", ""),
+                        "definition": card.get("definition", ""),
+                        "definition_image": card.get("definition_image", ""),
+                        "order": card.get("order", ""),
+                    }
+                )
+
+            self.cards = validated_cards
+            self.game_type = new_game_type
+            self.is_shuffled = new_is_shuffled
+
+            self.save()
+
+            return {
+                "success": True,
+                "game_type": self.game_type,
+                "cards": self.cards,
+                "count": len(self.cards),
+                "is_shuffled": self.is_shuffled,
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
     @XBlock.json_handler
     def close_game(self, data, suffix=''):
@@ -250,7 +254,7 @@ class GamesXBlock(XBlock):
         self.match_count = 0
         self.matches_remaining = self.list_length
 
-        if self.type == "flashcards":
+        if self.game_type == "flashcards":
             self.term_is_visible=True
             self.list_index=0
         return {
@@ -262,10 +266,10 @@ class GamesXBlock(XBlock):
         """
         A handler to display a tooltip message above the help icon.
         """
-        message = "ERR: self.type not defined or invalid"
-        if self.type == "flashcards":
+        message = "ERR: self.game_type not defined or invalid"
+        if self.game_type == "flashcards":
             message = "Click each card to reveal the definition"
-        elif self.type == "matching":
+        elif self.game_type == "matching":
             message = "Match each term with the correct definition"
         return {'message': message}
 
@@ -407,7 +411,7 @@ class GamesXBlock(XBlock):
             self.selected_containers.clear()
             return {'first_selection': False, 'deselect': True, 'id': id, 'prev_id': prev_id, 'match': False, 'match_count': self.match_count, 'matches_remaining': self.matches_remaining, 'list': self.list, 'list_length': self.list_length, 'id_list': self.matching_id_list, 'id_dictionary': self.matching_id_dictionary, 'time_seconds': self.time_seconds}
         
-        #containers with the same type cannot match (i.e. a term with a term, etc.)
+        #containers with the same game_type cannot match (i.e. a term with a term, etc.)
         if container_type == self.selected_containers['container1_type']:
             self.selected_containers.clear()
             return {'first_selection': False, 'deselect': False, 'id': id, 'prev_id': prev_id, 'match': False, 'match_count': self.match_count, 'matches_remaining': self.matches_remaining, 'list': self.list, 'list_length': self.list_length, 'id_list': self.matching_id_list, 'id_dictionary': self.matching_id_dictionary, 'time_seconds': self.time_seconds}
