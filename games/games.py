@@ -6,7 +6,7 @@ from xblock.core import XBlock
 from xblock.fields import Boolean, Dict, Integer, List, Scope, String
 
 from .constants import DEFAULT
-from .handlers import FlashcardsHandlers, MatchingHandlers, UniversalHandlers
+from .handlers import CommonHandlers, FlashcardsHandlers, MatchingHandlers
 
 class GamesXBlock(XBlock):
     """
@@ -150,36 +150,36 @@ class GamesXBlock(XBlock):
         frag.initialize_js("GamesXBlock")
         return frag
 
-    # Universal handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Common handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @XBlock.json_handler
     def expand_game(self, data, suffix=''):
         """A handler to expand the game from its title block."""
-        return UniversalHandlers.expand_game(self, data, suffix)
+        return CommonHandlers.expand_game(self, data, suffix)
 
     @XBlock.json_handler
     def get_settings(self, data, suffix=""):
         """Get game type, cards, and shuffle setting in one call."""
-        return UniversalHandlers.get_settings(self, data, suffix)
+        return CommonHandlers.get_settings(self, data, suffix)
 
     @XBlock.handler
     def upload_image(self, request, suffix=""):
         """Upload an image file and return the URL."""
-        return UniversalHandlers.upload_image(self, request, suffix)
+        return CommonHandlers.upload_image(self, request, suffix)
 
     @XBlock.json_handler
     def save_settings(self, data, suffix=""):
         """Save game type, shuffle setting, and all cards in one API call."""
-        return UniversalHandlers.save_settings(self, data, suffix)
+        return CommonHandlers.save_settings(self, data, suffix)
 
     @XBlock.json_handler
     def close_game(self, data, suffix=''):
         """A handler to close the game to its title block."""
-        return UniversalHandlers.close_game(self, data, suffix)
+        return CommonHandlers.close_game(self, data, suffix)
 
     @XBlock.json_handler
     def display_help(self, data, suffix=''):
         """A handler to display a tooltip message above the help icon."""
-        return UniversalHandlers.display_help(self, data, suffix)
+        return CommonHandlers.display_help(self, data, suffix)
 
     # Flashcards handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @XBlock.json_handler
