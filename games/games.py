@@ -11,6 +11,7 @@ from web_fragments.fragment import Fragment
 from xblock.core import Response, XBlock
 from xblock.fields import Boolean, Dict, Integer, List, Scope, String
 
+from .constants import DEFAULT
 
 class GamesXBlock(XBlock):
     """
@@ -23,17 +24,17 @@ class GamesXBlock(XBlock):
     """
 
     title = String(
-        default="Matching",
+        default=DEFAULT.TITLE,
         scope=Scope.content,
         help="The title of the block to be displayed in the xblock.",
     )
     display_name = String(
-        default="Games", scope=Scope.settings, help="Display name for this XBlock"
+        default=DEFAULT.DISPLAY_NAME, scope=Scope.settings, help="Display name for this XBlock"
     )
 
     # Change default to 'matching' for matching game and 'flashcards' for flashcards game to test
     game_type = String(
-        default="matching",
+        default=DEFAULT.GAME_TYPE,
         scope=Scope.settings,
         help="The kind of game this xblock is responsible for ('flashcards' or 'matching' for now).",
     )
@@ -50,7 +51,7 @@ class GamesXBlock(XBlock):
 
     # Flashcard game fields------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     list_index = Integer(
-        default=0,
+        default=DEFAULT.LIST_INDEX,
         scope=Scope.user_state,
         help="Current flashcard index for user",
     )
@@ -74,7 +75,7 @@ class GamesXBlock(XBlock):
     )
 
     match_count = Integer(
-        default=0,
+        default=DEFAULT.MATCH_COUNT,
         scope=Scope.user_state,
         help="Tracks how many matches have been successfully made. Used to determine when to switch pages.",
     )
@@ -90,14 +91,16 @@ class GamesXBlock(XBlock):
     )
 
     is_shuffled = Boolean(
-        default=False, scope=Scope.settings, help="Whether the cards should be shuffled"
+        default=DEFAULT.IS_SHUFFLED,
+        scope=Scope.settings,
+        help="Whether the cards should be shuffled",
     )
 
     """
     #Following fields for editor only------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     timer = Boolean(
-        default=True, 
-        scope=Scope.settings, 
+        default=True,
+        scope=Scope.settings,
         help="Whether to enable the timer for the matching game."
     )
     """
@@ -138,10 +141,7 @@ class GamesXBlock(XBlock):
 
     @XBlock.json_handler
     def get_settings(self, data, suffix=""):
-        """
-        A handler to get settings.
-        Get game type, cards, and shuffle setting in one call.
-        """
+        """Get game type, cards, and shuffle setting in one call."""
         return {
             "game_type": self.game_type,
             "cards": self.cards,
