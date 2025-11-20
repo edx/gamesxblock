@@ -1,21 +1,16 @@
 """An XBlock providing gamification capabilities."""
+
 import hashlib
 import random
 import string
 
 import pkg_resources
-from web_fragments.fragment import Fragment
-from xblock.core import Response, XBlock
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
-from xblock.fields import Integer, Scope, String, Boolean, List, Dict
+from web_fragments.fragment import Fragment
+from xblock.core import Response, XBlock
+from xblock.fields import Boolean, Dict, Integer, List, Scope, String
 
-#May need to import more or less field types later (https://github.com/openedx/XBlock/blob/master/xblock/fields.py)
-from xblock.fields import Integer, Scope, String, Boolean, List, Dict
-
-#need these libraries for random string generation
-import string
-import random
 
 class GamesXBlock(XBlock):
     """
@@ -26,90 +21,86 @@ class GamesXBlock(XBlock):
 
     The editor view will allow course authors to create and manipulate the games.
     """
+
     title = String(
-        default="Matching", 
-        scope=Scope.content, 
-        help="The title of the block to be displayed in the xblock."
+        default="Matching",
+        scope=Scope.content,
+        help="The title of the block to be displayed in the xblock.",
     )
     display_name = String(
         default="Games", scope=Scope.settings, help="Display name for this XBlock"
     )
 
-    #Change default to 'matching' for matching game and 'flashcards' for flashcards game to test
+    # Change default to 'matching' for matching game and 'flashcards' for flashcards game to test
     game_type = String(
-        default="matching", 
-        scope=Scope.settings, 
-        help="The kind of game this xblock is responsible for ('flashcards' or 'matching' for now)."
+        default="matching",
+        scope=Scope.settings,
+        help="The kind of game this xblock is responsible for ('flashcards' or 'matching' for now).",
     )
 
     cards = List(
-        default=[],
-        scope=Scope.content,
-        help="The list of terms and definitions."
+        default=[], scope=Scope.content, help="The list of terms and definitions."
     )
 
     list_length = Integer(
         default=len(cards.default),
         scope=Scope.content,
-        help="A field for the length of the list for convenience."
+        help="A field for the length of the list for convenience.",
     )
 
-    #Flashcard game fields------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Flashcard game fields------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     list_index = Integer(
         default=0,
-        scope=Scope.settings,
-        help="The type of game: 'flashcards' or 'matching'",
-    )
-
-    cards = List(
-        default=[],
-        scope=Scope.settings,
-        help="A list of all the matching game ids."
+        scope=Scope.user_state,
+        help="Current flashcard index for user",
     )
 
     matching_id_dictionary_index = Dict(
         default={},
-        scope=Scope.settings,
-        help="A dictionary to encrypt the ids of the terms and definitions for the matching game."
+        scope=Scope.user_state,
+        help="A dictionary to encrypt the ids of the terms and definitions for the matching game.",
     )
 
     matching_id_dictionary_type = Dict(
         default={},
-        scope=Scope.settings,
-        help="A dictionary to tie the id to the type of container (term or definition) for the matching game."
+        scope=Scope.user_state,
+        help="A dictionary to tie the id to the type of container (term or definition) for the matching game.",
     )
 
     matching_id_dictionary = Dict(
         default={},
-        scope=Scope.settings,
-        help="A dictionary to encrypt the ids of the terms and definitions for the matching game."
+        scope=Scope.user_state,
+        help="A dictionary to encrypt the ids of the terms and definitions for the matching game.",
     )
 
     match_count = Integer(
         default=0,
-        scope=Scope.settings,
-        help="Tracks how many matches have been successfully made. Used to determine when to switch pages."
+        scope=Scope.user_state,
+        help="Tracks how many matches have been successfully made. Used to determine when to switch pages.",
     )
 
     matches_remaining = Integer(
-        default = len(cards.default),
-        scope=Scope.content,
-        help="The list of terms and definitions."
-    )
-    is_shuffled = Boolean(
-        default=False,
-        scope=Scope.settings,
-        help="Whether the cards should be shuffled"
+        default=0, scope=Scope.user_state, help="The number of matches remaining."
     )
 
-    '''
+    selected_containers = Dict(
+        default={},
+        scope=Scope.user_state,
+        help="A dictionary to keep track of selected containers for the matching game.",
+    )
+
+    is_shuffled = Boolean(
+        default=False, scope=Scope.settings, help="Whether the cards should be shuffled"
+    )
+
+    """
     #Following fields for editor only------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     timer = Boolean(
         default=True, 
         scope=Scope.settings, 
         help="Whether to enable the timer for the matching game."
     )
-    '''
+    """
 
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
@@ -125,12 +116,12 @@ class GamesXBlock(XBlock):
         frag = Fragment(html.format(self=self))
         frag.add_css(self.resource_string("static/css/games.css"))
         frag.add_javascript(self.resource_string("static/js/src/games.js"))
-        frag.initialize_js('GamesXBlock')
+        frag.initialize_js("GamesXBlock")
         return frag
-    
-    #Universal handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    # Universal handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @XBlock.json_handler
-    def expand_game(self, data, suffix=''):
+    def expand_game(self, data, suffix=""):
         """
         A handler to expand the game from its title block.
         """
@@ -140,11 +131,11 @@ class GamesXBlock(XBlock):
         elif self.game_type == "matching":
             description = "Match each term with the correct definition"
         return {
-            'title': self.title,
-            'description': description,
-            'game_type': self.game_type
+            "title": self.title,
+            "description": description,
+            "game_type": self.game_type,
         }
-    
+
     @XBlock.json_handler
     def get_settings(self, data, suffix=""):
         """
@@ -180,7 +171,7 @@ class GamesXBlock(XBlock):
             )
         except Exception as e:
             return Response(json_body={"success": False, "error": str(e)}, status=400)
-        
+
     @XBlock.json_handler
     def save_settings(self, data, suffix=""):
         """
@@ -205,6 +196,10 @@ class GamesXBlock(XBlock):
             new_is_shuffled = data.get("is_shuffled", False)
             new_cards = data.get("cards", [])
 
+            game_type_changed_to_matching = (
+                self.game_type == "flashcards" and new_game_type == "matching"
+            )
+
             validated_cards = []
             for card in new_cards:
                 if not isinstance(card, dict):
@@ -217,15 +212,24 @@ class GamesXBlock(XBlock):
                         "error": "Each card must have term and definition",
                     }
 
-                validated_cards.append(
-                    {
-                        "term": card.get("term", ""),
-                        "term_image": card.get("term_image", ""),
-                        "definition": card.get("definition", ""),
-                        "definition_image": card.get("definition_image", ""),
-                        "order": card.get("order", ""),
-                    }
-                )
+                if game_type_changed_to_matching:
+                    validated_cards.append(
+                        {
+                            "term": card.get("term", ""),
+                            "term_image": "",
+                            "definition": card.get("definition", ""),
+                            "definition_image": "",
+                        }
+                    )
+                else:
+                    validated_cards.append(
+                        {
+                            "term": card.get("term", ""),
+                            "term_image": card.get("term_image", ""),
+                            "definition": card.get("definition", ""),
+                            "definition_image": card.get("definition_image", ""),
+                        }
+                    )
 
             self.cards = validated_cards
             self.game_type = new_game_type
@@ -244,25 +248,18 @@ class GamesXBlock(XBlock):
             return {"success": False, "error": str(e)}
 
     @XBlock.json_handler
-    def close_game(self, data, suffix=''):
+    def close_game(self, data, suffix=""):
         """
         A handler to close the game to its title block.
         """
-
-        self.game_started = False
-        self.time_seconds = 0
+        cards_length = len(self.cards) if self.cards else 0
         self.match_count = 0
-        self.matches_remaining = self.list_length
+        self.matches_remaining = cards_length
 
-        if self.game_type == "flashcards":
-            self.term_is_visible=True
-            self.list_index=0
-        return {
-            'title': self.title
-        }
-    
+        return {"title": self.title}
+
     @XBlock.json_handler
-    def display_help(self, data, suffix=''):
+    def display_help(self, data, suffix=""):
         """
         A handler to display a tooltip message above the help icon.
         """
@@ -271,214 +268,218 @@ class GamesXBlock(XBlock):
             message = "Click each card to reveal the definition"
         elif self.game_type == "matching":
             message = "Match each term with the correct definition"
-        return {'message': message}
+        return {"message": message}
 
-    #Flashcards handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------    
+    # Flashcards handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @XBlock.json_handler
-    def start_game_flashcards(self, data, suffix=''):
+    def start_game_flashcards(self, data, suffix=""):
         """
         A handler to begin the flashcards game.
+        Returns all cards, shuffled if is_shuffled is enabled.
         """
-        return {            
-            'list': self.list,
-            'list_index': self.list_index,
-            'list_length': self.list_length
-        }
-    
-    @XBlock.json_handler
-    def flip_flashcard(self, data, suffix=''):
-        """
-        A handler to flip the flashcard from term to definition
-        and vice versa.
-        """
-        if self.term_is_visible:
-            self.term_is_visible = not(self.term_is_visible)
-            return {'image': self.list[self.list_index]['definition_image'], 'text': self.list[self.list_index]['definition']}
-        
-        self.term_is_visible = not(self.term_is_visible)
-        return {'image': self.list[self.list_index]['term_image'], 'text': self.list[self.list_index]['term']}
+        cards_to_return = self.cards.copy() if self.cards else []
 
-    @XBlock.json_handler
-    def page_turn(self, data, suffix=''):
-        """
-        A handler to turn the page to a new flashcard (left or right) in the list.
-        """
-        #Always display the term first for a new flashcard.
-        self.term_is_visible = True
+        if self.is_shuffled and cards_to_return:
+            random.shuffle(cards_to_return)
 
-        if data['nextIndex'] == 'left':
-            if self.list_index>0:
-                self.list_index-=1
-            #else if the current index is 0, circulate to the last flashcard
-            else:
-                self.list_index=len(self.list)-1
-            return {'term_image': self.list[self.list_index]['term_image'], 'term': self.list[self.list_index]['term'], 'index': self.list_index+1, 'list_length': self.list_length}
+        return {"cards": cards_to_return, "cards_length": len(cards_to_return)}
 
-        #else data['nextIndex'] == 'right'
-        if self.list_index<len(self.list)-1:
-            self.list_index+=1
-        #else if the current index is the last flashcard, circulate to the first flashcard
-        else:
-            self.list_index = 0
-        return {'term_image': self.list[self.list_index]['term_image'], 'term': self.list[self.list_index]['term'], 'index': self.list_index+1, 'list_length': self.list_length}
-    
-    #Matching handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Matching handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @XBlock.json_handler
-    def start_game_matching(self, data, suffix=''):
+    def start_game_matching(self, data, suffix=""):
         """
         A handler to begin the matching game.
+        Returns all cards with term and definition (no images for matching).
+        Shuffles if is_shuffled is enabled.
         """
-        #function to return a random ascii string of 6 characters (upper- and lower-case)
+
+        # function to return a random ascii string of 6 characters (upper- and lower-case)
         def randomString():
-            return str(''.join(random.choices(string.ascii_letters, k=6)))
+            return str("".join(random.choices(string.ascii_letters, k=6)))
 
-        #set game fields accordingly
-        self.game_started = True
-        self.time_seconds = 0
-        self.selected_containers = {}
-        self.match_count = 0
-        self.matches_remaining = self.list_length
+        cards_to_use = self.cards.copy() if self.cards else []
+        cards_length = len(cards_to_use)
 
-        #create dictionaries and key-value pairs to reference the list based on ids that will be sent to games.js
-        for i in range(0, 2*self.list_length, 2):
-            #the ids are random strings stored into an indexed list
+        # Shuffle if enabled
+        if self.is_shuffled and cards_to_use:
+            random.shuffle(cards_to_use)
+
+        # Create temporary dictionaries for this game session (don't save to fields)
+        matching_id_dictionary_index = {}
+        matching_id_dictionary_type = {}
+        matching_id_dictionary = {}
+        matching_id_list = []
+
+        # create dictionaries and key-value pairs to reference the cards based on ids that will be sent to games.js
+        for i in range(0, 2 * cards_length, 2):
+            # the ids are random strings stored into an indexed list
             uniqueString = randomString()
-            while uniqueString in self.matching_id_list:
+            while uniqueString in matching_id_list:
                 uniqueString = randomString()
-            self.matching_id_list.append(uniqueString) #append id at index i
+            matching_id_list.append(uniqueString)  # append id at index i
 
-            while uniqueString in self.matching_id_list:
+            uniqueString = randomString()
+            while uniqueString in matching_id_list:
                 uniqueString = randomString()
-            self.matching_id_list.append(uniqueString) #append id at index i+1
+            matching_id_list.append(uniqueString)  # append id at index i+1
 
-            #the random string ids are the dictionary keys for the indices, types, and container content that they reference in the list
-            self.matching_id_dictionary_index[self.matching_id_list[i]] = i//2
-            self.matching_id_dictionary_index[self.matching_id_list[i+1]] = i//2
+            # the random string ids are the dictionary keys for the indices, types, and container content that they reference in the cards
+            matching_id_dictionary_index[matching_id_list[i]] = i // 2
+            matching_id_dictionary_index[matching_id_list[i + 1]] = i // 2
 
-            self.matching_id_dictionary_type[self.matching_id_list[i]] = "term"
-            self.matching_id_dictionary_type[self.matching_id_list[i+1]] = "definition"
+            matching_id_dictionary_type[matching_id_list[i]] = "term"
+            matching_id_dictionary_type[matching_id_list[i + 1]] = "definition"
 
-            self.matching_id_dictionary[self.matching_id_list[i]] = self.list[i//2]['term']
-            self.matching_id_dictionary[self.matching_id_list[i+1]] = self.list[i//2]['definition']
+            matching_id_dictionary[matching_id_list[i]] = cards_to_use[i // 2]["term"]
+            matching_id_dictionary[matching_id_list[i + 1]] = cards_to_use[i // 2][
+                "definition"
+            ]
 
-        return {            
-            'list': self.list,
-            'list_index': self.list_index,
-            'list_length': self.list_length,
-            'id_dictionary_index': self.matching_id_dictionary_index,
-            'id_dictionary': self.matching_id_dictionary,
-            'id_list': self.matching_id_list,
-            'time': "0:00"
+        # Store the dictionaries for this session
+        self.matching_id_dictionary_index = matching_id_dictionary_index
+        self.matching_id_dictionary_type = matching_id_dictionary_type
+        self.matching_id_dictionary = matching_id_dictionary
+
+        return {
+            "cards": cards_to_use,
+            "cards_length": cards_length,
+            "id_dictionary_index": matching_id_dictionary_index,
+            "id_dictionary": matching_id_dictionary,
+            "id_list": matching_id_list,
+            "time": "0:00",
         }
-    
-    @XBlock.json_handler
-    def update_timer(self, data, suffix=''):
-        """
-        A handler to update the timer. This is called every 1000ms by an ajax call in games.js.
-        """
 
-        #only increment the timer if the game has started
-        if self.game_started:
-            self.time_seconds += 1
-
-        return {'value': self.time_seconds, 'game_started': self.game_started}
-        
     @XBlock.json_handler
-    def select_container(self, data, suffix=''):
+    def select_container(self, data, suffix=""):
         """
         A handler for selecting matching game containers and evaluating matches.
         """
+        cards_length = len(self.cards) if self.cards else 0
 
-        #add a '#' to id for use with jQuery (this could be done in the js file as well)
-        id = "#"+data['id']
-        container_type = self.matching_id_dictionary_type[data['id']]
-        index = self.matching_id_dictionary_index[data['id']]
+        # add a '#' to id for use with jQuery (this could be done in the js file as well)
+        id = "#" + data["id"]
+        container_type = self.matching_id_dictionary_type[data["id"]]
+        index = self.matching_id_dictionary_index[data["id"]]
 
-        #if no container is selected yet
+        # if no container is selected yet
         if len(self.selected_containers) == 0:
-            self.selected_containers['container1_id'] = id
-            self.selected_containers['container1_type'] = container_type
-            self.selected_containers['container1_index'] = index
-            return {'first_selection': True, 'deselect': False, 'id': id, 'prev_id': None, 'match': False, 'match_count': self.match_count, 'matches_remaining': self.matches_remaining, 'list': self.list, 'list_length': self.list_length, 'id_list': self.matching_id_list, 'id_dictionary': self.matching_id_dictionary, 'time_seconds': self.time_seconds}
-        
-        #else
+            self.selected_containers["container1_id"] = id
+            self.selected_containers["container1_type"] = container_type
+            self.selected_containers["container1_index"] = index
+            return {
+                "first_selection": True,
+                "deselect": False,
+                "id": id,
+                "prev_id": None,
+                "match": False,
+                "match_count": self.match_count,
+                "matches_remaining": self.matches_remaining,
+                "cards": self.cards,
+                "cards_length": cards_length,
+                "id_dictionary": self.matching_id_dictionary,
+            }
 
-        #establish prev_id before conditionals since the selected_containers dictionary is cleared before returning to js
-        prev_id = self.selected_containers['container1_id']
+        # else
 
-        #if the container referenced by 'id' is already selected, deselect it
-        if id == self.selected_containers['container1_id']:
+        # establish prev_id before conditionals since the selected_containers dictionary is cleared before returning to js
+        prev_id = self.selected_containers["container1_id"]
+
+        # if the container referenced by 'id' is already selected, deselect it
+        if id == self.selected_containers["container1_id"]:
             self.selected_containers.clear()
-            return {'first_selection': False, 'deselect': True, 'id': id, 'prev_id': prev_id, 'match': False, 'match_count': self.match_count, 'matches_remaining': self.matches_remaining, 'list': self.list, 'list_length': self.list_length, 'id_list': self.matching_id_list, 'id_dictionary': self.matching_id_dictionary, 'time_seconds': self.time_seconds}
-        
-        #containers with the same game_type cannot match (i.e. a term with a term, etc.)
-        if container_type == self.selected_containers['container1_type']:
+            return {
+                "first_selection": False,
+                "deselect": True,
+                "id": id,
+                "prev_id": prev_id,
+                "match": False,
+                "match_count": self.match_count,
+                "matches_remaining": self.matches_remaining,
+                "cards": self.cards,
+                "cards_length": cards_length,
+                "id_dictionary": self.matching_id_dictionary,
+            }
+
+        # containers with the same game_type cannot match (i.e. a term with a term, etc.)
+        if container_type == self.selected_containers["container1_type"]:
             self.selected_containers.clear()
-            return {'first_selection': False, 'deselect': False, 'id': id, 'prev_id': prev_id, 'match': False, 'match_count': self.match_count, 'matches_remaining': self.matches_remaining, 'list': self.list, 'list_length': self.list_length, 'id_list': self.matching_id_list, 'id_dictionary': self.matching_id_dictionary, 'time_seconds': self.time_seconds}
-    
-        #if the execution gets to this point and the indices are the same, this implies a term/ definition match
-        if index == self.selected_containers['container1_index']:
+            return {
+                "first_selection": False,
+                "deselect": False,
+                "id": id,
+                "prev_id": prev_id,
+                "match": False,
+                "match_count": self.match_count,
+                "matches_remaining": self.matches_remaining,
+                "cards": self.cards,
+                "cards_length": cards_length,
+                "id_dictionary": self.matching_id_dictionary,
+            }
+
+        # if the execution gets to this point and the indices are the same, this implies a term/ definition match
+        if index == self.selected_containers["container1_index"]:
             self.selected_containers.clear()
             self.match_count += 1
             self.matches_remaining -= 1
-            return {'first_selection': False, 'deselect': False, 'id': id, 'prev_id': prev_id, 'match': True, 'match_count': self.match_count, 'matches_remaining': self.matches_remaining, 'list': self.list, 'list_length': self.list_length, 'id_list': self.matching_id_list, 'id_dictionary': self.matching_id_dictionary, 'time_seconds': self.time_seconds}
-        
-        #not a match
+            return {
+                "first_selection": False,
+                "deselect": False,
+                "id": id,
+                "prev_id": prev_id,
+                "match": True,
+                "match_count": self.match_count,
+                "matches_remaining": self.matches_remaining,
+                "cards": self.cards,
+                "cards_length": cards_length,
+                "id_dictionary": self.matching_id_dictionary,
+            }
+
+        # not a match
         self.selected_containers.clear()
-        return {'first_selection': False, 'deselect': False, 'id': id, 'prev_id': prev_id, 'match': False, 'match_count': self.match_count, 'matches_remaining': self.matches_remaining, 'list': self.list, 'list_length': self.list_length, 'id_list': self.matching_id_list, 'id_dictionary': self.matching_id_dictionary, 'time_seconds': self.time_seconds}
-        
+        return {
+            "first_selection": False,
+            "deselect": False,
+            "id": id,
+            "prev_id": prev_id,
+            "match": False,
+            "match_count": self.match_count,
+            "matches_remaining": self.matches_remaining,
+            "cards": self.cards,
+            "cards_length": cards_length,
+            "id_dictionary": self.matching_id_dictionary,
+        }
+
     @XBlock.json_handler
-    def end_game_matching(self, data, suffix=''):
+    def end_game_matching(self, data, suffix=""):
         """
-        A handler to end the matching game and compare the user's time to the best_time field.
+        A handler to end the matching game.
         """
-        self.game_started = False
-        self.time_seconds = 0
+        cards_length = len(self.cards) if self.cards else 0
         self.selected_containers = {}
         self.match_count = 0
-        self.matches_remaining = self.list_length
+        self.matches_remaining = cards_length
 
-        new_time = data['newTime']
-        prev_time = self.best_time
-        new_record = False
-        first_attempt = False
-
-        #update record if it is beaten, need to check if best time is null before comparing it since we can't compare null and int
-        if self.best_time is None:
-            first_attempt = True
-            new_record = True
-            self.best_time = new_time
-            return {'new_time': new_time, 'prev_time': prev_time, 'new_record': new_record, 'first_attempt': first_attempt}
-        
-        if new_time < self.best_time:
-            new_record = True
-            self.best_time = new_time
-
-        return {'new_time': new_time, 'prev_time': prev_time, 'new_record': new_record, 'first_attempt': first_attempt}
+        return {"success": True}
 
     @staticmethod
     def workbench_scenarios():
         """A canned scenario for display in the workbench."""
         return [
-            ("Multiple GamesXBlock",
-             """<vertical_demo>
+            (
+                "Multiple GamesXBlock",
+                """<vertical_demo>
                 <games/>
                 <games/>
                 <games/>
                 </vertical_demo>
-             """),
-             ("games",
-              """<games/>
-              """)
+             """,
+            ),
+            (
+                "games",
+                """<games/>
+              """,
+            ),
         ]
-
-
-
-
-
-
-
-
 
     """
     @XBlock.json_handler
@@ -492,7 +493,7 @@ class GamesXBlock(XBlock):
         return {'shuffle': self.shuffle}
     """
 
-    '''
+    """
     # The following is another way to approach the list field - currently not used but may be useful after dummy data is no longer used.
         default=[
             Dict(
@@ -511,5 +512,5 @@ class GamesXBlock(XBlock):
                 help="The third flashcard in the list."
             )
         ],
-        '''
-    #)
+        """
+    # )
