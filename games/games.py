@@ -1,6 +1,7 @@
 """An XBlock providing gamification capabilities."""
 
 import pkg_resources
+from django.utils.translation import gettext_lazy as _
 from web_fragments.fragment import Fragment
 from xblock.core import XBlock
 from xblock.fields import Boolean, Dict, Integer, List, Scope, String
@@ -21,21 +22,21 @@ class GamesXBlock(XBlock):
     title = String(
         default=DEFAULT.TITLE,
         scope=Scope.content,
-        help="The title of the block to be displayed in the xblock.",
+        help=_("The title of the block to be displayed in the xblock."),
     )
     display_name = String(
-        default=DEFAULT.DISPLAY_NAME, scope=Scope.settings, help="Display name for this XBlock"
+        default=DEFAULT.DISPLAY_NAME, scope=Scope.settings, help=_("Display name for this XBlock")
     )
 
     # Change default to 'matching' for matching game and 'flashcards' for flashcards game to test
     game_type = String(
         default=DEFAULT.GAME_TYPE,
         scope=Scope.settings,
-        help="The kind of game this xblock is responsible for ('flashcards' or 'matching' for now).",
+        help=_("The kind of game this xblock is responsible for ('flashcards' or 'matching' for now)."),
     )
 
     cards = List(
-        default=[], scope=Scope.content, help="The list of terms and definitions."
+        default=[], scope=Scope.content, help=_("The list of terms and definitions.")
     )
 
     # Alias for cards - handlers.py uses 'list' field name
@@ -44,84 +45,84 @@ class GamesXBlock(XBlock):
     list_length = Integer(
         default=len(cards.default),
         scope=Scope.content,
-        help="A field for the length of the list for convenience.",
+        help=_("A field for the length of the list for convenience."),
     )
 
     # Flashcard game fields------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     term_is_visible = Boolean(
         default=True,
         scope=Scope.user_state,
-        help="Whether the term side of the flashcard is currently visible.",
+        help=_("Whether the term side of the flashcard is currently visible."),
     )
 
     list_index = Integer(
         default=DEFAULT.LIST_INDEX,
         scope=Scope.user_state,
-        help="Current flashcard index for user",
+        help=_("Current flashcard index for user"),
     )
 
     matching_id_dictionary_index = Dict(
         default={},
         scope=Scope.user_state,
-        help="A dictionary to encrypt the ids of the terms and definitions for the matching game.",
+        help=_("A dictionary to encrypt the ids of the terms and definitions for the matching game."),
     )
 
     matching_id_dictionary_type = Dict(
         default={},
         scope=Scope.user_state,
-        help="A dictionary to tie the id to the type of container (term or definition) for the matching game.",
+        help=_("A dictionary to tie the id to the type of container (term or definition) for the matching game."),
     )
 
     matching_id_dictionary = Dict(
         default={},
         scope=Scope.user_state,
-        help="A dictionary to encrypt the ids of the terms and definitions for the matching game.",
+        help=_("A dictionary to encrypt the ids of the terms and definitions for the matching game."),
     )
 
     matching_id_list = List(
         default=[],
         scope=Scope.user_state,
-        help="A list of random IDs for the matching game containers.",
+        help=_("A list of random IDs for the matching game containers."),
     )
 
     game_started = Boolean(
         default=False,
         scope=Scope.user_state,
-        help="Whether the matching game has started (for timer tracking).",
+        help=_("Whether the matching game has started (for timer tracking)."),
     )
 
     time_seconds = Integer(
         default=0,
         scope=Scope.user_state,
-        help="Timer in seconds for the matching game.",
+        help=_("Timer in seconds for the matching game."),
     )
 
     best_time = Integer(
         default=None,
         scope=Scope.user_state,
-        help="Best time (in seconds) for completing the matching game.",
+        help=_("Best time (in seconds) for completing the matching game."),
     )
 
     match_count = Integer(
         default=DEFAULT.MATCH_COUNT,
         scope=Scope.user_state,
-        help="Tracks how many matches have been successfully made. Used to determine when to switch pages.",
+        help=_("Tracks how many matches have been successfully made. Used to determine when to switch pages."),
     )
 
     matches_remaining = Integer(
-        default=0, scope=Scope.user_state, help="The number of matches remaining."
+        default=0, scope=Scope.user_state, help=_("The number of matches remaining.")
     )
 
     selected_containers = Dict(
         default={},
         scope=Scope.user_state,
-        help="A dictionary to keep track of selected containers for the matching game.",
+        help=_("A dictionary to keep track of selected containers for the matching game."),
     )
 
     is_shuffled = Boolean(
         default=DEFAULT.IS_SHUFFLED,
         scope=Scope.settings,
-        help="Whether the cards should be shuffled",
+        help=_("Whether the cards should be shuffled"),
     )
 
     """
