@@ -3,6 +3,7 @@ Common handler methods for the Games XBlock.
 
 This module contains handlers that work across all game types.
 """
+
 import hashlib
 
 from django.core.files.base import ContentFile
@@ -16,13 +17,14 @@ from ..constants import (
     GAME_TYPE,
     UPLOAD,
 )
+from games.utils import get_gamesxblock_storage, delete_image
 
 
 class CommonHandlers:
     """Handlers that work across all game types."""
 
     @staticmethod
-    def expand_game(xblock, data, suffix=''):
+    def expand_game(xblock, data, suffix=""):
         """A handler to expand the game from its title block."""
         description = _("ERR: self.game_type not defined or invalid")
         if xblock.game_type == GAME_TYPE.FLASHCARDS:
@@ -30,9 +32,9 @@ class CommonHandlers:
         elif xblock.game_type == GAME_TYPE.MATCHING:
             description = _("Match each term with the correct definition")
         return {
-            'title': xblock.title,
-            'description': description,
-            'game_type': xblock.game_type
+            "title": xblock.title,
+            "description": description,
+            "game_type": xblock.game_type,
         }
 
     @staticmethod
@@ -46,25 +48,62 @@ class CommonHandlers:
 
     @staticmethod
     def upload_image(xblock, request, suffix=""):
-        """Upload an image file and return the URL."""
+        """
+        Upload an image file to configured storage (S3 if set) and return URL.
+        """
+        asset_storage = get_gamesxblock_storage()
         try:
             upload_file = request.params["file"].file
             file_name = request.params["file"].filename
-            file_hash = hashlib.md5(upload_file.read()).hexdigest()
-            upload_file.seek(0)
-            _, ext = (
-                file_name.rsplit(".", 1) if "." in file_name else (file_name, UPLOAD.DEFAULT_EXTENSION)
-            )
+            if "." not in file_name:
+                return Response(
+                    json_body={
+                        "success": False,
+                        "error": "File must have an extension",
+                    },
+                    status=400,
+                )
+            _, ext = file_name.rsplit(".", 1)
+            ext = ext.lower()
+            allowed_exts = ["jpg", "jpeg", "png", "gif", "webp", "svg"]
+            if ext not in allowed_exts:
+                return Response(
+                    json_body={
+                        "success": False,
+                        "error": f"Unsupported file type '.{ext}'. Allowed: {', '.join(sorted(allowed_exts))}",
+                    },
+                    status=400,
+                )
+            blob = upload_file.read()
+            file_hash = hashlib.md5(blob).hexdigest()
             file_path = f"{UPLOAD.PATH_PREFIX}/{xblock.scope_ids.usage_id.block_id}/{file_hash}.{ext}"
-            saved_path = default_storage.save(
-                file_path, ContentFile(upload_file.read())
-            )
-            file_url = default_storage.url(saved_path)
+            saved_path = asset_storage.save(file_path, ContentFile(blob))
+            file_url = asset_storage.url(saved_path)
             return Response(
-                json_body={"success": True, "url": file_url, "filename": file_name}
+                json_body={
+                    "success": True,
+                    "url": file_url,
+                    "filename": file_name,
+                    "file_path": file_path,
+                }
             )
         except Exception as e:
             return Response(json_body={"success": False, "error": str(e)}, status=400)
+
+    @staticmethod
+    def delete_image_handler(self, data, suffix=""):
+        """
+        Delete an image by storage key.
+        Expected: { "key": "gamesxblock/<block_id>/<hash>.ext" }
+        """
+        key = data.get("key")
+        if not key:
+            return {"success": False, "error": "Missing key"}
+        try:
+            is_deleted = delete_image(self.asset_storage, key)
+            return {"success": is_deleted, "key": key}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
     @staticmethod
     def save_settings(xblock, data, suffix=""):
@@ -107,7 +146,9 @@ class CommonHandlers:
                         CARD_FIELD.TERM: card.get(CARD_FIELD.TERM, ""),
                         CARD_FIELD.TERM_IMAGE: card.get(CARD_FIELD.TERM_IMAGE, ""),
                         CARD_FIELD.DEFINITION: card.get(CARD_FIELD.DEFINITION, ""),
-                        CARD_FIELD.DEFINITION_IMAGE: card.get(CARD_FIELD.DEFINITION_IMAGE, ""),
+                        CARD_FIELD.DEFINITION_IMAGE: card.get(
+                            CARD_FIELD.DEFINITION_IMAGE, ""
+                        ),
                         CARD_FIELD.ORDER: card.get(CARD_FIELD.ORDER, ""),
                     }
                 )
@@ -129,7 +170,7 @@ class CommonHandlers:
             return {"success": False, "error": str(e)}
 
     @staticmethod
-    def close_game(xblock, data, suffix=''):
+    def close_game(xblock, data, suffix=""):
         """A handler to close the game to its title block."""
         xblock.game_started = False
         xblock.time_seconds = 0
@@ -139,16 +180,14 @@ class CommonHandlers:
         if xblock.game_type == GAME_TYPE.FLASHCARDS:
             xblock.term_is_visible = True
             xblock.list_index = 0
-        return {
-            'title': xblock.title
-        }
+        return {"title": xblock.title}
 
     @staticmethod
-    def display_help(xblock, data, suffix=''):
+    def display_help(xblock, data, suffix=""):
         """A handler to display a tooltip message above the help icon."""
         message = _("ERR: self.game_type not defined or invalid")
         if xblock.game_type == GAME_TYPE.FLASHCARDS:
             message = _("Click each card to reveal the definition")
         elif xblock.game_type == GAME_TYPE.MATCHING:
             message = _("Match each term with the correct definition")
-        return {'message': message}
+        return {"message": message}

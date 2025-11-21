@@ -34,10 +34,12 @@ setup(
         "XBlock>=1.2.0",
         "web-fragments>=0.3.0",
         "Django>=2.2",
+        "django-waffle==5.0.0",
+        "edx-toggles==5.4.1",
     ],
     entry_points={
         "xblock.v1": [
-            "games = games.games:GamesXBlock",
+            "games = games:GamesXBlock",
         ]
     },
     package_data=package_data("games", ["static", "public", "locale"]),

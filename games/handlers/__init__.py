@@ -11,4 +11,4 @@ from .common import CommonHandlers
 from .flashcards import FlashcardsHandlers
 from .matching import MatchingHandlers
 
-__all__ = ['CommonHandlers', 'FlashcardsHandlers', 'MatchingHandlers']
+__all__ = ["CommonHandlers", "FlashcardsHandlers", "MatchingHandlers"]
