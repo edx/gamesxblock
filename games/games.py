@@ -9,6 +9,7 @@ from xblock.fields import Boolean, Dict, Integer, List, Scope, String
 from .constants import DEFAULT
 from .handlers import CommonHandlers, FlashcardsHandlers, MatchingHandlers
 
+
 class GamesXBlock(XBlock):
     """
     An XBlock for creating games.
@@ -25,14 +26,18 @@ class GamesXBlock(XBlock):
         help=_("The title of the block to be displayed in the xblock."),
     )
     display_name = String(
-        default=DEFAULT.DISPLAY_NAME, scope=Scope.settings, help=_("Display name for this XBlock")
+        default=DEFAULT.DISPLAY_NAME,
+        scope=Scope.settings,
+        help="Display name for this XBlock",
     )
 
     # Change default to 'matching' for matching game and 'flashcards' for flashcards game to test
     game_type = String(
         default=DEFAULT.GAME_TYPE,
         scope=Scope.settings,
-        help=_("The kind of game this xblock is responsible for ('flashcards' or 'matching' for now)."),
+        help=_(
+            "The kind of game this xblock is responsible for ('flashcards' or 'matching' for now)."
+        ),
     )
 
     cards = List(
@@ -64,19 +69,25 @@ class GamesXBlock(XBlock):
     matching_id_dictionary_index = Dict(
         default={},
         scope=Scope.user_state,
-        help=_("A dictionary to encrypt the ids of the terms and definitions for the matching game."),
+        help=_(
+            "A dictionary to encrypt the ids of the terms and definitions for the matching game."
+        ),
     )
 
     matching_id_dictionary_type = Dict(
         default={},
         scope=Scope.user_state,
-        help=_("A dictionary to tie the id to the type of container (term or definition) for the matching game."),
+        help=_(
+            "A dictionary to tie the id to the type of container (term or definition) for the matching game."
+        ),
     )
 
     matching_id_dictionary = Dict(
         default={},
         scope=Scope.user_state,
-        help=_("A dictionary to encrypt the ids of the terms and definitions for the matching game."),
+        help=_(
+            "A dictionary to encrypt the ids of the terms and definitions for the matching game."
+        ),
     )
 
     matching_id_list = List(
@@ -106,7 +117,9 @@ class GamesXBlock(XBlock):
     match_count = Integer(
         default=DEFAULT.MATCH_COUNT,
         scope=Scope.user_state,
-        help=_("Tracks how many matches have been successfully made. Used to determine when to switch pages."),
+        help=_(
+            "Tracks how many matches have been successfully made. Used to determine when to switch pages."
+        ),
     )
 
     matches_remaining = Integer(
@@ -116,7 +129,9 @@ class GamesXBlock(XBlock):
     selected_containers = Dict(
         default={},
         scope=Scope.user_state,
-        help=_("A dictionary to keep track of selected containers for the matching game."),
+        help=_(
+            "A dictionary to keep track of selected containers for the matching game."
+        ),
     )
 
     is_shuffled = Boolean(
@@ -153,7 +168,7 @@ class GamesXBlock(XBlock):
 
     # Common handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @XBlock.json_handler
-    def expand_game(self, data, suffix=''):
+    def expand_game(self, data, suffix=""):
         """A handler to expand the game from its title block."""
         return CommonHandlers.expand_game(self, data, suffix)
 
@@ -164,8 +179,19 @@ class GamesXBlock(XBlock):
 
     @XBlock.handler
     def upload_image(self, request, suffix=""):
-        """Upload an image file and return the URL."""
+        """
+        Upload an image file to configured storage (S3 if set) and return URL.
+        """
         return CommonHandlers.upload_image(self, request, suffix)
+
+    @XBlock.json_handler
+    def delete_image_handler(self, data, suffix=""):
+        """
+        Delete an image by storage key.
+        Expected: { "key": "gamesxblock/<block_id>/<hash>.ext" }
+        """
+        # TODO: Delete API is not integrated yet, will handle this one after API is integrated if any change needed.
+        return CommonHandlers.delete_image(self, data, suffix)
 
     @XBlock.json_handler
     def save_settings(self, data, suffix=""):
@@ -173,49 +199,49 @@ class GamesXBlock(XBlock):
         return CommonHandlers.save_settings(self, data, suffix)
 
     @XBlock.json_handler
-    def close_game(self, data, suffix=''):
+    def close_game(self, data, suffix=""):
         """A handler to close the game to its title block."""
         return CommonHandlers.close_game(self, data, suffix)
 
     @XBlock.json_handler
-    def display_help(self, data, suffix=''):
+    def display_help(self, data, suffix=""):
         """A handler to display a tooltip message above the help icon."""
         return CommonHandlers.display_help(self, data, suffix)
 
     # Flashcards handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @XBlock.json_handler
-    def start_game_flashcards(self, data, suffix=''):
+    def start_game_flashcards(self, data, suffix=""):
         """A handler to begin the flashcards game."""
         return FlashcardsHandlers.start_game_flashcards(self, data, suffix)
 
     @XBlock.json_handler
-    def flip_flashcard(self, data, suffix=''):
+    def flip_flashcard(self, data, suffix=""):
         """A handler to flip the flashcard from term to definition and vice versa."""
         return FlashcardsHandlers.flip_flashcard(self, data, suffix)
 
     @XBlock.json_handler
-    def page_turn(self, data, suffix=''):
+    def page_turn(self, data, suffix=""):
         """A handler to turn the page to a new flashcard (left or right) in the list."""
         return FlashcardsHandlers.page_turn(self, data, suffix)
 
     # Matching handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     @XBlock.json_handler
-    def start_game_matching(self, data, suffix=''):
+    def start_game_matching(self, data, suffix=""):
         """A handler to begin the matching game."""
         return MatchingHandlers.start_game_matching(self, data, suffix)
 
     @XBlock.json_handler
-    def update_timer(self, data, suffix=''):
+    def update_timer(self, data, suffix=""):
         """Update the timer. This is called every 1000ms by an ajax call."""
         return MatchingHandlers.update_timer(self, data, suffix)
 
     @XBlock.json_handler
-    def select_container(self, data, suffix=''):
+    def select_container(self, data, suffix=""):
         """A handler for selecting matching game containers and evaluating matches."""
         return MatchingHandlers.select_container(self, data, suffix)
 
     @XBlock.json_handler
-    def end_game_matching(self, data, suffix=''):
+    def end_game_matching(self, data, suffix=""):
         """End the matching game and compare the user's time to the best_time field."""
         return MatchingHandlers.end_game_matching(self, data, suffix)
 

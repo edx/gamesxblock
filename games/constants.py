@@ -8,6 +8,7 @@ including game types, field names, default values, error messages, and UI text.
 
 class GAME_TYPE:
     """Game type constants."""
+
     FLASHCARDS = "flashcards"
     MATCHING = "matching"
     VALID = [FLASHCARDS, MATCHING]
@@ -15,6 +16,7 @@ class GAME_TYPE:
 
 class DEFAULT:
     """Default values for XBlock fields."""
+
     TITLE = "Matching"
     DISPLAY_NAME = "Games"
     GAME_TYPE = GAME_TYPE.MATCHING
@@ -26,6 +28,7 @@ class DEFAULT:
 
 class CARD_FIELD:
     """Card field names."""
+
     TERM = "term"
     TERM_IMAGE = "term_image"
     DEFINITION = "definition"
@@ -35,17 +38,19 @@ class CARD_FIELD:
 
 class CONTAINER_TYPE:
     """Container types for matching game."""
+
     TERM = "term"
     DEFINITION = "definition"
 
 
 class UPLOAD:
     """File upload settings."""
+
     PATH_PREFIX = "games"
-    DEFAULT_EXTENSION = "jpg"
 
 
 class CONFIG:
     """Configuration values."""
+
     RANDOM_STRING_LENGTH = 6
     MATCHES_PER_PAGE = 5  # Number of matches displayed per page
