@@ -44,16 +44,13 @@ class GamesXBlock(XBlock):
         default=[], scope=Scope.content, help=_("The list of terms and definitions.")
     )
 
-    # Alias for cards - handlers.py uses 'list' field name
-    list = cards
-
     list_length = Integer(
         default=len(cards.default),
         scope=Scope.content,
         help=_("A field for the length of the list for convenience."),
     )
 
-    # Flashcard game fields------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Flashcard game fields
     term_is_visible = Boolean(
         default=True,
         scope=Scope.user_state,
@@ -141,7 +138,7 @@ class GamesXBlock(XBlock):
     )
 
     """
-    #Following fields for editor only------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    #Following fields for editor only
     timer = Boolean(
         default=True,
         scope=Scope.settings,
@@ -166,7 +163,7 @@ class GamesXBlock(XBlock):
         frag.initialize_js("GamesXBlock")
         return frag
 
-    # Common handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Common handlers
     @XBlock.json_handler
     def expand_game(self, data, suffix=""):
         """A handler to expand the game from its title block."""
@@ -203,28 +200,13 @@ class GamesXBlock(XBlock):
         """A handler to close the game to its title block."""
         return CommonHandlers.close_game(self, data, suffix)
 
-    @XBlock.json_handler
-    def display_help(self, data, suffix=""):
-        """A handler to display a tooltip message above the help icon."""
-        return CommonHandlers.display_help(self, data, suffix)
-
-    # Flashcards handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Flashcards handlers
     @XBlock.json_handler
     def start_game_flashcards(self, data, suffix=""):
         """A handler to begin the flashcards game."""
         return FlashcardsHandlers.start_game_flashcards(self, data, suffix)
 
-    @XBlock.json_handler
-    def flip_flashcard(self, data, suffix=""):
-        """A handler to flip the flashcard from term to definition and vice versa."""
-        return FlashcardsHandlers.flip_flashcard(self, data, suffix)
-
-    @XBlock.json_handler
-    def page_turn(self, data, suffix=""):
-        """A handler to turn the page to a new flashcard (left or right) in the list."""
-        return FlashcardsHandlers.page_turn(self, data, suffix)
-
-    # Matching handlers------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    # Matching handlers
     @XBlock.json_handler
     def start_game_matching(self, data, suffix=""):
         """A handler to begin the matching game."""

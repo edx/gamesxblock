@@ -5,19 +5,14 @@ This module contains handlers that work across all game types.
 """
 
 import hashlib
+import uuid
 
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
 from django.utils.translation import gettext as _
+from games.utils import delete_image, get_gamesxblock_storage
 from xblock.core import Response
 
-from ..constants import (
-    CARD_FIELD,
-    DEFAULT,
-    GAME_TYPE,
-    UPLOAD,
-)
-from games.utils import get_gamesxblock_storage, delete_image
+from ..constants import CARD_FIELD, DEFAULT, GAME_TYPE, UPLOAD
 
 
 class CommonHandlers:
@@ -150,12 +145,16 @@ class CommonHandlers:
                             CARD_FIELD.DEFINITION_IMAGE, ""
                         ),
                         CARD_FIELD.ORDER: card.get(CARD_FIELD.ORDER, ""),
+                        CARD_FIELD.CARD_KEY: card.get(
+                            CARD_FIELD.CARD_KEY, str(uuid.uuid4())
+                        ),
                     }
                 )
 
             xblock.cards = validated_cards
             xblock.game_type = new_game_type
             xblock.is_shuffled = new_is_shuffled
+            xblock.list_length = len(validated_cards)
 
             xblock.save()
 
@@ -181,13 +180,3 @@ class CommonHandlers:
             xblock.term_is_visible = True
             xblock.list_index = 0
         return {"title": xblock.title}
-
-    @staticmethod
-    def display_help(xblock, data, suffix=""):
-        """A handler to display a tooltip message above the help icon."""
-        message = _("ERR: self.game_type not defined or invalid")
-        if xblock.game_type == GAME_TYPE.FLASHCARDS:
-            message = _("Click each card to reveal the definition")
-        elif xblock.game_type == GAME_TYPE.MATCHING:
-            message = _("Match each term with the correct definition")
-        return {"message": message}
