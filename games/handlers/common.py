@@ -7,6 +7,7 @@ import hashlib
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.utils.translation import gettext as _
 from xblock.core import Response
 
 from ..constants import (
@@ -23,11 +24,11 @@ class CommonHandlers:
     @staticmethod
     def expand_game(xblock, data, suffix=''):
         """A handler to expand the game from its title block."""
-        description = "ERR: self.game_type not defined or invalid"
+        description = _("ERR: self.game_type not defined or invalid")
         if xblock.game_type == GAME_TYPE.FLASHCARDS:
-            description = "Click each card to reveal the definition"
+            description = _("Click each card to reveal the definition")
         elif xblock.game_type == GAME_TYPE.MATCHING:
-            description = "Match each term with the correct definition"
+            description = _("Match each term with the correct definition")
         return {
             'title': xblock.title,
             'description': description,
@@ -92,13 +93,13 @@ class CommonHandlers:
             validated_cards = []
             for card in new_cards:
                 if not isinstance(card, dict):
-                    return {"success": False, "error": "Each card must be an object"}
+                    return {"success": False, "error": _("Each card must be an object")}
 
                 # Validate required fields
                 if CARD_FIELD.TERM not in card or CARD_FIELD.DEFINITION not in card:
                     return {
                         "success": False,
-                        "error": "Each card must have term and definition",
+                        "error": _("Each card must have term and definition"),
                     }
 
                 validated_cards.append(
@@ -145,9 +146,9 @@ class CommonHandlers:
     @staticmethod
     def display_help(xblock, data, suffix=''):
         """A handler to display a tooltip message above the help icon."""
-        message = "ERR: self.game_type not defined or invalid"
+        message = _("ERR: self.game_type not defined or invalid")
         if xblock.game_type == GAME_TYPE.FLASHCARDS:
-            message = "Click each card to reveal the definition"
+            message = _("Click each card to reveal the definition")
         elif xblock.game_type == GAME_TYPE.MATCHING:
-            message = "Match each term with the correct definition"
+            message = _("Match each term with the correct definition")
         return {'message': message}

@@ -1,0 +1,23 @@
+# Configuration for edX i18n_tool
+# This file tells i18n_tool where to find source files and where to put translations
+
+# The language of the source strings (the code)
+source_locale: en
+
+# Locales for which we want to generate dummy translations (for testing)
+dummy_locales:
+  - eo  # Esperanto used as dummy locale
+
+# Directories to search for translatable strings
+locales:
+  - games/locale
+
+# Python source paths
+source_messages_dir: games
+
+# Generate source files - maps target files to source files
+generate_merge:
+  django.po:
+    - django-partial.po
+  djangojs.po:
+    - djangojs-partial.po
