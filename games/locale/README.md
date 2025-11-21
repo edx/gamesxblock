@@ -18,6 +18,7 @@ make compile_translations
 - `games/locale/<locale>/LC_MESSAGES/django.po` - Translations per locale
 - `games/locale/<locale>/LC_MESSAGES/django.mo` - Compiled translations
 
-## Supported Locales
+## Locales
 
-en, ar, es_419, fr, zh_CN
+**Available:** en  
+**Planned:** ar, es_419, fr, zh_CN
