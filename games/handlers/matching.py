@@ -132,7 +132,15 @@ class MatchingHandlers:
         )
 
         # Build dynamically obfuscated decoder as named function
-        obf_decoder = f"function MatchingInit({var_names['runtime']},{var_names['elem']}){{var {var_names['tag']}=$('#{data_element_id}',{var_names['elem']});if(!{var_names['tag']}.length)return;try{{var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));{var_names['tag']}.remove();if({var_names['payload']}&&{var_names['payload']}.pairs)GamesXBlockMatchingInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.pairs);}}catch({var_names['err']}){{console.warn('Decode failed');}}}}"
+        obf_decoder = (
+            f"function MatchingInit({var_names['runtime']},{var_names['elem']}){{"
+            f"var {var_names['tag']}=$('#{data_element_id}',{var_names['elem']});"
+            f"if(!{var_names['tag']}.length)return;try{{"
+            f"var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));"
+            f"{var_names['tag']}.remove();if({var_names['payload']}&&{var_names['payload']}.pairs)"
+            f"GamesXBlockMatchingInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.pairs);"
+            f"}}catch({var_names['err']}){{console.warn('Decode failed');}}}}"
+        )
 
         template_context["encoded_mapping"] = encoded_mapping
         template_context["obf_decoder"] = obf_decoder
