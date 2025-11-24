@@ -20,7 +20,7 @@ def package_data(pkg, roots):
 
 
 setup(
-    name="games",
+    name="edx-games",
     version="1.0.0",
     description="Interactive games XBlock for Open edX - Create flashcards and matching games with image support",
     author="edX",
