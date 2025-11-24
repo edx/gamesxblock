@@ -148,17 +148,22 @@
 }
 
 .tooltip {
-    width: 600%;
+    width: 150px;
     position: absolute;
     bottom: 140%;
-    right: -250%;
+    opacity: unset;
+    left: -115px;
+    float: left;
+    right: 0;
+    top: -80px;
+    background: var(--core-elm, #00262B);
 }
 
 .tooltip::after {
     content: "";
     position: absolute;
     top: 100%;
-    left: 50%;
+    left: 85%;
     margin-left: -8px;
     border-width: 8px;
     border-style: solid;

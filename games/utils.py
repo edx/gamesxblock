@@ -3,6 +3,7 @@ Utility methods for xblock
 """
 
 import logging
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import default_storage
