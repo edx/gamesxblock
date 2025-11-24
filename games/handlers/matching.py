@@ -3,15 +3,25 @@ Matching game handler methods.
 
 This module contains handlers specific to the matching game type.
 """
-
+import pkg_resources
 import random
 import string
+from web_fragments.fragment import Fragment
 
 from ..constants import CONFIG, CONTAINER_TYPE
 
 
 class MatchingHandlers:
     """Handlers specific to the matching game."""
+
+    @staticmethod
+    def student_view(xblock, context=None):
+        """
+        The student view for matching game.
+        """
+        html = pkg_resources.resource_string(__name__, "../static/html/matching.html")
+        frag = Fragment(html.decode("utf8"))
+        return frag
 
     @staticmethod
     def _random_string():
