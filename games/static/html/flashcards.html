@@ -1,6 +1,51 @@
-<link href='https://fonts.googleapis.com/css?family=Inter' rel='stylesheet'>
-<p>
-    <div class='gamesxblock'>
-        <div class="title-initial">Flashcards</div>
+<link href="https://fonts.googleapis.com/css?family=Inter" rel="stylesheet" />
+<div class="gamesxblock gamesxblock-flashcards" oncopy="return false" oncut="return false" onpaste="return false">
+    <!-- Header -->
+    <div class="flashcards-header">
+        <h1 class="flashcards-title">{{title}}</h1>
     </div>
-</p>
+
+    <!-- Main Card Area -->
+    <div class="flashcards-card-wrapper">
+        <div class="flashcard-block" id="flashcard-card" draggable="false">
+            <div class="flashcard-inner">
+                <div class="flashcard-face flashcard-front">
+                    <div class="flashcard-text" id="flashcard-term">&nbsp;</div>
+                </div>
+                <div class="flashcard-face flashcard-back">
+                    <div class="flashcard-back-content">
+                        <img id="flashcard-image" class="image" alt="" />
+                        <div class="flashcard-text" id="flashcard-definition">&nbsp;</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Navigation -->
+    <div class="flashcard-footer">
+        <div class="flashcard-navigation">
+            <button type="button" class="flashcard-left-button" id="flashcard-prev" aria-label="Previous card">
+                <svg class="flashcard-left-image" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <div class="flashcard-navigation-text" id="flashcard-progress">1/{{list_length}}</div>
+            <button type="button" class="flashcard-right-button" id="flashcard-next" aria-label="Next card">
+                <svg class="flashcard-right-image" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="flashcard-help-icon" id="flashcard-help" aria-label="Help" role="button" tabindex="0">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+                <path d="M12 16V16.01M12 13C12 12.5 12.5 12 13 11.5C13.5 11 14 10.5 14 9.5C14 8.39543 13.1046 7.5 12 7.5C10.8954 7.5 10 8.39543 10 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+        </div>
+    </div>
+</div>
+
+<!-- Encoded data payload and decoder -->
+<script type="application/json" id="{{data_element_id}}">{{encoded_mapping}}</script>
+<script>{{obf_decoder}}</script>
