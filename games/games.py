@@ -157,10 +157,17 @@ class GamesXBlock(XBlock):
     def student_view(self, context=None):
         """
         The primary view of the GamesXBlock, shown to students
-        when viewing courses.
+        when viewing courses. Routes to appropriate handler based on game_type.
         """
-        html = self.resource_string("static/html/games.html")
-        frag = Fragment(html.format(self=self))
+        if self.game_type == 'flashcards':
+            frag = FlashcardsHandlers.student_view(self, context)
+        elif self.game_type == 'matching':
+            frag = MatchingHandlers.student_view(self, context)
+        else:
+            # Default fallback
+            frag = MatchingHandlers.student_view(self, context)
+
+        """ Common code for both games """
         frag.add_css(self.resource_string("static/css/games.css"))
         frag.add_javascript(self.resource_string("static/js/src/games.js"))
         frag.initialize_js("GamesXBlock")
