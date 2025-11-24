@@ -3,9 +3,14 @@ Matching game handler methods.
 
 This module contains handlers specific to the matching game type.
 """
-import pkg_resources
+
+import base64
+import json
 import random
 import string
+
+import pkg_resources
+from django.template import Context, Template
 from web_fragments.fragment import Fragment
 
 from ..constants import CONFIG, CONTAINER_TYPE
@@ -18,9 +23,141 @@ class MatchingHandlers:
     def student_view(xblock, context=None):
         """
         The student view for matching game.
+        Uses django template for rendering dynamic content.
         """
-        html = pkg_resources.resource_string(__name__, "../static/html/matching.html")
-        frag = Fragment(html.decode("utf8"))
+
+        # Prepare data
+        cards = list(xblock.cards) if xblock.cards else []
+        if xblock.is_shuffled and cards:
+            random.shuffle(cards)
+
+        # Build mixed column data if shuffled, else original layout
+        list_length = len(cards)
+        if xblock.is_shuffled and cards:
+            # Create items for both term and definition
+            all_items = []
+            for idx, card in enumerate(cards):
+                all_items.append(
+                    {
+                        "idx": idx,
+                        "kind": "term",
+                        "id": f"term-{idx}",
+                        "text": card.get("term", ""),
+                    }
+                )
+                all_items.append(
+                    {
+                        "idx": idx,
+                        "kind": "definition",
+                        "id": f"def-{idx}",
+                        "text": card.get("definition", ""),
+                    }
+                )
+            random.shuffle(all_items)
+
+            left_items = []
+            right_items = []
+            for item in all_items:
+                # Ensure each column gets exactly list_length items
+                if len(left_items) < list_length and len(right_items) < list_length:
+                    if random.choice([True, False]):
+                        left_items.append(item)
+                    else:
+                        right_items.append(item)
+                elif len(left_items) < list_length:
+                    left_items.append(item)
+                else:
+                    right_items.append(item)
+        else:
+            # Original separated layout (terms left, definitions right)
+            left_items = []
+            right_items = []
+            for idx, card in enumerate(cards):
+                left_items.append(
+                    {
+                        "idx": idx,
+                        "kind": "term",
+                        "id": f"term-{idx}",
+                        "text": card.get("term", ""),
+                    }
+                )
+                right_items.append(
+                    {
+                        "idx": idx,
+                        "kind": "definition",
+                        "id": f"def-{idx}",
+                        "text": card.get("definition", ""),
+                    }
+                )
+
+        template_context = {
+            "title": xblock.title,
+            "list_length": list_length,
+            "left_items": left_items,
+            "right_items": right_items,
+        }
+
+        # Obfuscated mapping: pairs with salt, base64 encoded
+        salt = "".join(random.choices(string.ascii_letters + string.digits, k=12))
+        pairs = []
+        for card in cards:
+            pairs.append({"t": card.get("term", ""), "d": card.get("definition", "")})
+        mapping_payload = {"pairs": pairs, "salt": salt}
+        encoded_mapping = base64.b64encode(
+            json.dumps(mapping_payload).encode()
+        ).decode()
+
+        # Generate random variable names for obfuscation
+        var_names = {
+            "runtime": "".join(
+                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
+            ),
+            "elem": "".join(
+                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
+            ),
+            "tag": "".join(
+                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
+            ),
+            "payload": "".join(
+                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
+            ),
+            "err": "".join(
+                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
+            ),
+        }
+        # Build dynamically obfuscated decoder as named function
+        # Generate random UUID for the data element
+        data_element_id = "".join(
+            random.choices(string.ascii_lowercase + string.digits, k=16)
+        )
+
+        # Build dynamically obfuscated decoder as named function
+        obf_decoder = f"function MatchingInit({var_names['runtime']},{var_names['elem']}){{var {var_names['tag']}=$('#{data_element_id}',{var_names['elem']});if(!{var_names['tag']}.length)return;try{{var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));{var_names['tag']}.remove();if({var_names['payload']}&&{var_names['payload']}.pairs)GamesXBlockMatchingInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.pairs);}}catch({var_names['err']}){{console.warn('Decode failed');}}}}"
+
+        template_context["encoded_mapping"] = encoded_mapping
+        template_context["obf_decoder"] = obf_decoder
+        template_context["data_element_id"] = data_element_id
+
+        # Render template
+        template_str = pkg_resources.resource_string(
+            __name__, "../static/html/matching.html"
+        ).decode("utf8")
+        template = Template(template_str)
+        html = template.render(Context(template_context))
+
+        frag = Fragment(html)
+        # Attach matching-specific CSS and JS
+        frag.add_css(
+            pkg_resources.resource_string(
+                __name__, "../static/css/matching.css"
+            ).decode("utf8")
+        )
+        frag.add_javascript(
+            pkg_resources.resource_string(
+                __name__, "../static/js/src/matching.js"
+            ).decode("utf8")
+        )
+        frag.initialize_js("MatchingInit")
         return frag
 
     @staticmethod

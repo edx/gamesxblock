@@ -3,10 +3,11 @@ Flashcards game handler methods.
 
 This module contains handlers specific to the flashcards game type.
 """
-import pkg_resources
-from web_fragments.fragment import Fragment
 
 import random
+
+import pkg_resources
+from web_fragments.fragment import Fragment
 
 
 class FlashcardsHandlers:
@@ -19,10 +20,15 @@ class FlashcardsHandlers:
         """
         html = pkg_resources.resource_string(__name__, "../static/html/flashcards.html")
         frag = Fragment(html.decode("utf8"))
+        frag.add_css(
+            pkg_resources.resource_string(
+                __name__, "../static/css/flashcards.css"
+            ).decode("utf8")
+        )
         return frag
 
     @staticmethod
-    def start_game_flashcards(xblock, data, suffix=''):
+    def start_game_flashcards(xblock, data, suffix=""):
         """A handler to begin the flashcards game."""
         cards = list(xblock.cards)
 

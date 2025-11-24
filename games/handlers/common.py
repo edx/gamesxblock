@@ -9,8 +9,9 @@ import uuid
 
 from django.core.files.base import ContentFile
 from django.utils.translation import gettext as _
-from games.utils import delete_image, get_gamesxblock_storage
 from xblock.core import Response
+
+from games.utils import delete_image, get_gamesxblock_storage
 
 from ..constants import CARD_FIELD, DEFAULT, GAME_TYPE, UPLOAD
 
