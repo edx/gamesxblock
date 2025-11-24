@@ -22,10 +22,6 @@ msgid "The title of the block to be displayed in the xblock."
 msgstr ""
 
 #: games/games.py
-msgid "Display name for this XBlock"
-msgstr ""
-
-#: games/games.py
 msgid ""
 "The kind of game this xblock is responsible for ('flashcards' or 'matching' "
 "for now)."

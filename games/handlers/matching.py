@@ -3,15 +3,25 @@ Matching game handler methods.
 
 This module contains handlers specific to the matching game type.
 """
-
+import pkg_resources
 import random
 import string
+from web_fragments.fragment import Fragment
 
 from ..constants import CONFIG, CONTAINER_TYPE
 
 
 class MatchingHandlers:
     """Handlers specific to the matching game."""
+
+    @staticmethod
+    def student_view(xblock, context=None):
+        """
+        The student view for matching game.
+        """
+        html = pkg_resources.resource_string(__name__, "../static/html/matching.html")
+        frag = Fragment(html.decode("utf8"))
+        return frag
 
     @staticmethod
     def _random_string():
@@ -61,7 +71,7 @@ class MatchingHandlers:
             ]["definition"]
 
         return {
-            "list": xblock.list,
+            "list": xblock.cards,
             "list_index": xblock.list_index,
             "list_length": xblock.list_length,
             "id_dictionary_index": xblock.matching_id_dictionary_index,
@@ -100,7 +110,7 @@ class MatchingHandlers:
                 "match": False,
                 "match_count": xblock.match_count,
                 "matches_remaining": xblock.matches_remaining,
-                "list": xblock.list,
+                "list": xblock.cards,
                 "list_length": xblock.list_length,
                 "id_list": xblock.matching_id_list,
                 "id_dictionary": xblock.matching_id_dictionary,
@@ -121,7 +131,7 @@ class MatchingHandlers:
                 "match": False,
                 "match_count": xblock.match_count,
                 "matches_remaining": xblock.matches_remaining,
-                "list": xblock.list,
+                "list": xblock.cards,
                 "list_length": xblock.list_length,
                 "id_list": xblock.matching_id_list,
                 "id_dictionary": xblock.matching_id_dictionary,
@@ -139,7 +149,7 @@ class MatchingHandlers:
                 "match": False,
                 "match_count": xblock.match_count,
                 "matches_remaining": xblock.matches_remaining,
-                "list": xblock.list,
+                "list": xblock.cards,
                 "list_length": xblock.list_length,
                 "id_list": xblock.matching_id_list,
                 "id_dictionary": xblock.matching_id_dictionary,
@@ -159,7 +169,7 @@ class MatchingHandlers:
                 "match": True,
                 "match_count": xblock.match_count,
                 "matches_remaining": xblock.matches_remaining,
-                "list": xblock.list,
+                "list": xblock.cards,
                 "list_length": xblock.list_length,
                 "id_list": xblock.matching_id_list,
                 "id_dictionary": xblock.matching_id_dictionary,
@@ -176,7 +186,7 @@ class MatchingHandlers:
             "match": False,
             "match_count": xblock.match_count,
             "matches_remaining": xblock.matches_remaining,
-            "list": xblock.list,
+            "list": xblock.cards,
             "list_length": xblock.list_length,
             "id_list": xblock.matching_id_list,
             "id_dictionary": xblock.matching_id_dictionary,

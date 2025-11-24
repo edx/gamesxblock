@@ -64,45 +64,41 @@ function GamesXBlock(runtime, element) {
         });
     })
 
-    //Help
-    function getHelp(help) {
-        //Function to show the game's tooltip
+    var gameType = null;
+    var helpMessages = {
+        'flashcards': 'Click each card to reveal the definition',
+        'matching': 'Match each term with the correct definition'
+    };
+
+    $(document).on('mouseenter', '.help', function(eventObject) {
+        var message = helpMessages[gameType] || 'Play the game';
 
         var tooltip = "<div class='tooltip'></div>";
         var tooltipText = "<div class='tooltip-text'></div>";
 
         $('.help-outline', element).append(tooltip);
         $('.tooltip', element).append(tooltipText);
-        $('.tooltip-text', element).text(help.message);
-    }
-    function hideHelp(help) {
-        //Function to hide the game's tooltip
-
-        $('.tooltip', element).remove();
-    }
-    $(document).on('mouseenter', '.help', function(eventObject) {
-        $.ajax({
-            type: "POST",
-            url: runtime.handlerUrl(element, 'display_help'),
-            data: JSON.stringify({}),
-            success: getHelp
-        });
+        $('.tooltip-text', element).text(message);
     });
+
     $(document).on('mouseleave', '.help', function(eventObject) {
-        $.ajax({
-            type: "POST",
-            url: runtime.handlerUrl(element, 'display_help'),
-            data: JSON.stringify({}),
-            success: hideHelp
-        });
+        $('.tooltip', element).remove();
     });
 
     //Flashcards functions------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    //Start Flashcards
-    function startFlashcards(firstCard) {
-        //Function to start the flashcards game
+    var flashcardsData = {
+        cards: [],
+        currentIndex: 0,
+        showingTerm: true
+    };
 
+    //Start Flashcards
+    function startFlashcards(data) {
         $('.start-block', element).remove();
+        gameType = 'flashcards';
+        flashcardsData.cards = data.list;
+        flashcardsData.currentIndex = 0;
+        flashcardsData.showingTerm = true;
 
         var flashcardBlock = "<div class='flashcard-block'></div>";
         var firstImage = "<image class='image'>";
@@ -120,9 +116,9 @@ function GamesXBlock(runtime, element) {
 
         $('.background-block', element).append(flashcardBlock);
         $('.flashcard-block', element).append(firstImage);
-        $('.image', element).attr("src", firstCard.list[firstCard.list_index]['term_image']);
+        $('.image', element).attr("src", flashcardsData.cards[0]['term_image'] || '');
         $('.flashcard-block', element).append(text);
-        $('.flashcard-text', element).text(firstCard.list[firstCard.list_index]['term']);
+        $('.flashcard-text', element).text(flashcardsData.cards[0]['term']);
         $('.background-block', element).append(footer);
         $('.flashcard-footer', element).append(spacer);
         $('.flashcard-footer', element).append(navigation);
@@ -131,7 +127,7 @@ function GamesXBlock(runtime, element) {
         $('.flashcard-navigation', element).append(left);
         $('.flashcard-left-button', element).append(leftImage);
         $('.flashcard-navigation', element).append(navText);
-        $('.flashcard-navigation-text', element).text("1" + " / " + firstCard.list_length);
+        $('.flashcard-navigation-text', element).text("1 / " + flashcardsData.cards.length);
         $('.flashcard-navigation', element).append(right);
         $('.flashcard-right-button', element).append(rightImage);
     }
@@ -144,45 +140,60 @@ function GamesXBlock(runtime, element) {
         });
     });
 
-    //Flip Flashcard
-    function flipFlashcard(newSide) {
-        //Function to flip the current flashcard
-
-        $('.image', element).attr("src", newSide.image);
-        $('.flashcard-text', element).text(newSide.text);
-    }
     $(document).on('click', '.flashcard-block', function(eventObject) {
-        $.ajax({
-            type: "POST",
-            url: runtime.handlerUrl(element, 'flip_flashcard'),
-            data: JSON.stringify({}),
-            success: flipFlashcard
-        });
+        var currentCard = flashcardsData.cards[flashcardsData.currentIndex];
+
+        if (flashcardsData.showingTerm) {
+            // Flip to definition
+            $('.image', element).attr("src", currentCard.definition_image || '');
+            $('.flashcard-text', element).text(currentCard.definition);
+            flashcardsData.showingTerm = false;
+        } else {
+            // Flip to term
+            $('.image', element).attr("src", currentCard.term_image || '');
+            $('.flashcard-text', element).text(currentCard.term);
+            flashcardsData.showingTerm = true;
+        }
     });
 
-    //Turn Page
-    function pageTurn(nextCard) {
-        //Function to turn the page to another flashcard
-
-        $('.image', element).attr("src", nextCard.term_image);
-        $('.flashcard-text', element).text(nextCard.term);
-        $('.flashcard-navigation-text', element).text(nextCard.index + " / " + nextCard.list_length);
-    }
     $(document).on('click', '.flashcard-left-button', function(eventObject) {
-        $.ajax({
-            type: "POST",
-            url: runtime.handlerUrl(element, 'page_turn'),
-            data: JSON.stringify({nextIndex: 'left'}),
-            success: pageTurn
-        });
+        eventObject.stopPropagation(); // Prevent flashcard flip
+
+        // Move to previous card
+        if (flashcardsData.currentIndex > 0) {
+            flashcardsData.currentIndex--;
+        } else {
+            // Wrap to last card
+            flashcardsData.currentIndex = flashcardsData.cards.length - 1;
+        }
+
+        // Always show term first
+        flashcardsData.showingTerm = true;
+        var currentCard = flashcardsData.cards[flashcardsData.currentIndex];
+
+        $('.image', element).attr("src", currentCard.term_image || '');
+        $('.flashcard-text', element).text(currentCard.term);
+        $('.flashcard-navigation-text', element).text((flashcardsData.currentIndex + 1) + " / " + flashcardsData.cards.length);
     });
+
     $(document).on('click', '.flashcard-right-button', function(eventObject) {
-        $.ajax({
-            type: "POST",
-            url: runtime.handlerUrl(element, 'page_turn'),
-            data: JSON.stringify({nextIndex: 'right'}),
-            success: pageTurn
-        });
+        eventObject.stopPropagation(); // Prevent flashcard flip
+
+        // Move to next card
+        if (flashcardsData.currentIndex < flashcardsData.cards.length - 1) {
+            flashcardsData.currentIndex++;
+        } else {
+            // Wrap to first card
+            flashcardsData.currentIndex = 0;
+        }
+
+        // Always show term first
+        flashcardsData.showingTerm = true;
+        var currentCard = flashcardsData.cards[flashcardsData.currentIndex];
+
+        $('.image', element).attr("src", currentCard.term_image || '');
+        $('.flashcard-text', element).text(currentCard.term);
+        $('.flashcard-navigation-text', element).text((flashcardsData.currentIndex + 1) + " / " + flashcardsData.cards.length);
     });
 
     //Matching functions------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -191,6 +202,9 @@ function GamesXBlock(runtime, element) {
         //Function to start the matching game
 
         $('.start-block', element).remove();
+
+        // Set game type for help tooltip
+        gameType = 'matching';
 
         //the css style changes made by jquery are not persistent after the element is removed, so the following line does not need to be undone when closeGame is called
         $('.background-block', element).css({"height":"initial", "padding":"20px 24px 24px 24px"});
