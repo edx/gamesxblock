@@ -1,6 +1,46 @@
 <link href='https://fonts.googleapis.com/css?family=Inter' rel='stylesheet'>
-<p>
-    <div class='gamesxblock'>
-        <div class="title-initial">Matching</div>
+<div class='gamesxblock gamesxblock-matching'>
+    <div class="matching-header">
+        <h1 class="matching-title">{{title}}</h1>
     </div>
-</p>
+
+    <div class="matching-grid">
+        <!-- Left Column (mixed when shuffled) -->
+        <div class="matching-column matching-column-left">
+            {% for item in left_items %}
+            <div class="matching-box">
+                <span class="matching-box-text">{{item.text}}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Right Column (mixed when shuffled) -->
+        <div class="matching-column matching-column-right">
+            {% for item in right_items %}
+            <div class="matching-box">
+                <span class="matching-box-text">{{item.text}}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="matching-footer">
+        <div class="matching-progress-wrapper">
+            <svg class="matching-progress-circle" viewBox="0 0 120 120">
+                <circle class="matching-progress-bg" cx="60" cy="60" r="54" />
+                <circle class="matching-progress-bar" cx="60" cy="60" r="54" />
+            </svg>
+            <div class="matching-progress-text">0/{{list_length}}</div>
+        </div>
+        <div class="matching-timer">0:00</div>
+        <div class="matching-help-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 16V16.01M12 13C12 12.5 12.5 12 13 11.5C13.5 11 14 10.5 14 9.5C14 8.39543 13.1046 7.5 12 7.5C10.8954 7.5 10 8.39543 10 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+<script type="application/json" id="{{data_element_id}}">{{encoded_mapping}}</script>
+<script>{{obf_decoder}}</script>

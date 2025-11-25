@@ -287,7 +287,7 @@ function GamesXBlock(runtime, element) {
         //Function to format the time_seconds field (for use by other functions)
 
         var seconds = ":" + timeSeconds%60;
-        if (timeSeconds%60 < 10) 
+        if (timeSeconds%60 < 10)
             var seconds = ":0" + timeSeconds%60;
 
         var minutes = Math.floor(timeSeconds/60)%60;
@@ -581,33 +581,33 @@ function GamesXBlock(runtime, element) {
     function displayCards(data) {
         var container = $('.games-container', element);
         var html = '';
-        
+
         if (!data.cards || data.cards.length === 0) {
             html = '<p class="no-cards">No cards available yet. Add cards in the Studio editor.</p>';
         } else {
             html += '<h3>Game Type: ' + data.game_type + '</h3>';
             html += '<div class="cards-list">';
-            
+
             data.cards.forEach(function(card, index) {
                 html += '<div class="card-item">';
                 html += '<div class="card-number">Card ' + (index + 1) + '</div>';
-                
+
                 if (card.term_image) {
                     html += '<div class="card-image"><img src="' + card.term_image + '" alt="Term image"></div>';
                 }
                 html += '<div class="card-term"><strong>Term:</strong> ' + card.term + '</div>';
-                
+
                 if (card.definition_image) {
                     html += '<div class="card-image"><img src="' + card.definition_image + '" alt="Definition image"></div>';
                 }
                 html += '<div class="card-definition"><strong>Definition:</strong> ' + card.definition + '</div>';
-                
+
                 html += '</div>';
             });
-            
+
             html += '</div>';
         }
-        
+
         container.html(html);
     }
 

@@ -2,7 +2,6 @@
 
 import pkg_resources
 from django.utils.translation import gettext_lazy as _
-from web_fragments.fragment import Fragment
 from xblock.core import XBlock
 from xblock.fields import Boolean, Dict, Integer, List, Scope, String
 
@@ -156,16 +155,15 @@ class GamesXBlock(XBlock):
         The primary view of the GamesXBlock, shown to students
         when viewing courses. Routes to appropriate handler based on game_type.
         """
-        if self.game_type == 'flashcards':
+        if self.game_type == "flashcards":
             frag = FlashcardsHandlers.student_view(self, context)
-        elif self.game_type == 'matching':
+        elif self.game_type == "matching":
             frag = MatchingHandlers.student_view(self, context)
         else:
             # Default fallback
             frag = MatchingHandlers.student_view(self, context)
 
         """ Common code for both games """
-        frag.add_css(self.resource_string("static/css/games.css"))
         frag.add_javascript(self.resource_string("static/js/src/games.js"))
         frag.initialize_js("GamesXBlock")
         return frag
