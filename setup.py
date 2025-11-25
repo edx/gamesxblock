@@ -21,7 +21,7 @@ def package_data(pkg, roots):
 
 setup(
     name="edx-games",
-    version="1.0.0",
+    version="1.0.1",
     description="Interactive games XBlock for Open edX - Create flashcards and matching games with image support",
     author="edX",
     author_email="edx@edx.org",
@@ -29,6 +29,7 @@ setup(
     license="AGPL v3",
     packages=[
         "games",
+        "games.handlers",
     ],
     install_requires=[
         "XBlock>=1.2.0",
