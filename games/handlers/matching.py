@@ -121,6 +121,7 @@ class MatchingHandlers:
             f"var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));"
             f"{var_names['tag']}.remove();if({var_names['payload']}&&{var_names['payload']}.pairs)"
             f"GamesXBlockMatchingInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.pairs,{var_names['payload']}.key);"
+            f"$('#obf_decoder_script',{var_names['elem']}).remove();"
             f"}}catch({var_names['err']}){{console.warn('Decode failed');}}}}"
         )
 

@@ -29,8 +29,18 @@
     font-weight: 500;
     line-height: 28px;
 }
-
-.matching-start-button {
+.matching-end-screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    min-height: 400px;
+}
+.matching-end-screen.active {
+    display: flex;
+}
+.matching-end-button, .matching-start-button {
     display: inline-flex;
     padding: 10px 16px;
     justify-content: center;
@@ -46,6 +56,7 @@
     transition: background 0.2s ease;
 }
 
+.matching-end-button:hover,
 .matching-start-button:hover {
     background: var(--primary-700, #00171A);
 }

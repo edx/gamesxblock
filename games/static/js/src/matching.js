@@ -48,6 +48,45 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         }
     }
 
+    // Refresh game with new shuffled data from backend
+    function refreshGame() {
+        MatchInit = null;
+        $.ajax({
+            type: 'GET',
+            url: runtime.handlerUrl(element, 'refresh_game'),
+            dataType: 'html',
+            success: function(html) {
+                // Replace the XBlock content with fresh HTML
+                $(element).html(html);
+                // Look for the obfuscated decoder script and execute it
+                var decoderScript = $(element).find('#obf_decoder_script');
+
+                if (decoderScript.length) {
+                    var scriptContent = decoderScript.text();
+                    decoderScript.remove();
+                    try {
+                        // Execute the script which defines MatchingInit function
+                        eval(scriptContent);
+                        // Call MatchingInit if it was defined
+                        if (typeof MatchingInit === 'function') {
+                            MatchingInit(runtime, element);
+                        }
+                    } catch (err) {
+                        console.error('Failed to initialize game:', err);
+                        window.location.reload();
+                    }
+                } else {
+                    window.location.reload();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to refresh game:', error);
+                // Fallback to full page reload if partial refresh fails
+                window.location.reload();
+            }
+        });
+    }
+
     // Start screen handler
     $('.matching-start-button', element).off('click').on('click', function() {
         if (!matching_key) {
@@ -96,6 +135,11 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
                 startButton.prop('disabled', false);
             }
         });
+    });
+
+    $('.matching-end-button', element).off('click').on('click', function() {
+        // Reload the XBlock to start a new game
+        refreshGame();
     });
 
     // Track selections and matched keys
@@ -157,6 +201,11 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         // Check if game is complete
         if (matchCount >= totalPairs) {
             stopTimer();
+            setTimeout(() => {
+                $('.matching-end-screen', element).addClass('active');
+                $('.matching-grid', element).remove();
+                $('.matching-footer', element).remove();
+            }, 1400);
         }
 
         setTimeout(() => {
