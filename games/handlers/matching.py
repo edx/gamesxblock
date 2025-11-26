@@ -10,6 +10,7 @@ import random
 import string
 
 import pkg_resources
+from xblock.core import Response
 from django.template import Context, Template
 from web_fragments.fragment import Fragment
 from ..constants import CONFIG, CONTAINER_TYPE, DEFAULT
@@ -182,6 +183,21 @@ class MatchingHandlers:
                 "success": False,
                 "error": f"Failed to decrypt mapping: {str(e)}"
             }
+
+    @staticmethod
+    def refresh_game(xblock, request, suffix=""):
+        """
+        Refresh the game by re-rendering the student view with new shuffled data.
+        Returns HTML fragment that can replace the existing game content.
+        """
+        frag = MatchingHandlers.student_view(xblock, context=None)
+
+        # Return the HTML content with appropriate headers
+        return Response(
+            frag.content,
+            content_type='text/html',
+            charset='UTF-8'
+        )
 
     @staticmethod
     def start_game_matching(xblock, data, suffix=""):

@@ -234,6 +234,11 @@ class GamesXBlock(XBlock):
         """Decrypt and return the key mapping for matching game validation."""
         return MatchingHandlers.get_matching_key_mapping(self, data, suffix)
 
+    @XBlock.handler
+    def refresh_game(self, request, suffix=""):
+        """Refresh the game view with new shuffled data."""
+        return MatchingHandlers.refresh_game(self, request, suffix)
+
     @staticmethod
     def workbench_scenarios():
         """A canned scenario for display in the workbench."""
