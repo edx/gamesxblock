@@ -64,19 +64,22 @@ class CommonHandlers:
     @staticmethod
     def generate_encryption_key(xblock):
         """
-        Generate a deterministic encryption key based on xblock instance.
-        Uses block_id, usage_id, and a constant salt to ensure consistency per xblock instance.
+        Generate encryption key using block_id and salt.
+        Uses a consistent identifier that doesn't change across requests.
 
         Args:
             xblock: The xblock instance
 
         Returns:
-            Base64-encoded encryption key
+            Base64-encoded encryption key (bytes)
         """
-        # Create a deterministic seed from xblock identifiers and salt
-        seed_string = f"{xblock.scope_ids.usage_id}:{xblock.scope_ids.def_id}:{CONFIG.ENCRYPTION_SALT}"
+        # Use block_id (which is stable) and the encryption salt
+        block_id = str(xblock.scope_ids.usage_id.block_id)
+        seed_string = f"{block_id}:{CONFIG.ENCRYPTION_SALT}"
+
         # Generate a 32-byte key using SHA-256
         key_bytes = hashlib.sha256(seed_string.encode()).digest()
+
         # Fernet requires base64-encoded 32-byte key
         return base64.urlsafe_b64encode(key_bytes)
 
@@ -95,7 +98,7 @@ class CommonHandlers:
         fernet = Fernet(encryption_key)
         data_json = json.dumps(data)
         encrypted_data = fernet.encrypt(data_json.encode())
-        return base64.urlsafe_b64encode(encrypted_data).decode()
+        return encrypted_data.decode()
 
     @staticmethod
     def decrypt_data(encrypted_hash, encryption_key):
@@ -110,8 +113,8 @@ class CommonHandlers:
             Decrypted data (dictionary or original data structure)
         """
         fernet = Fernet(encryption_key)
-        encrypted_data = base64.urlsafe_b64decode(encrypted_hash.encode())
-        decrypted_json = fernet.decrypt(encrypted_data).decode()
+        # Fernet.decrypt expects bytes (base64-encoded), so just encode the string
+        decrypted_json = fernet.decrypt(encrypted_hash.encode()).decode()
         return json.loads(decrypted_json)
 
     @staticmethod

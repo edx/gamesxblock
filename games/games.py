@@ -229,6 +229,11 @@ class GamesXBlock(XBlock):
         """End the matching game and compare the user's time to the best_time field."""
         return MatchingHandlers.end_game_matching(self, data, suffix)
 
+    @XBlock.json_handler
+    def get_matching_key_mapping(self, data, suffix=""):
+        """Decrypt and return the key mapping for matching game validation."""
+        return MatchingHandlers.get_matching_key_mapping(self, data, suffix)
+
     @staticmethod
     def workbench_scenarios():
         """A canned scenario for display in the workbench."""

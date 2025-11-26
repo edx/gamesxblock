@@ -68,10 +68,21 @@ class MatchingHandlers:
         encryption_key = CommonHandlers.generate_encryption_key(xblock)
         encrypted_hash = CommonHandlers.encrypt_data(key_mapping, encryption_key)
 
-        # Create flat list of items in the same order as left_items + right_items
-        all_items = left_items + right_items
+        # Create flat list of items in original format for JavaScript (before restructuring)
+        flat_items_for_js = left_items + right_items
+
+        # Combine encrypted_hash (matching_key) and flat items into a payload
+        mapping_payload = {"key": encrypted_hash, "pairs": flat_items_for_js}
+
+        # Add index to each item for HTML key generation (after creating payload)
+        for i, item in enumerate(left_items):
+            for key in item:
+                left_items[i] = {"key": key, "text": item[key], "index": i}
+        for i, item in enumerate(right_items):
+            for key in item:
+                right_items[i] = {"key": key, "text": item[key], "index": i + list_length}
         encoded_mapping = base64.b64encode(
-            json.dumps(all_items).encode()
+            json.dumps(mapping_payload).encode()
         ).decode()
 
         template_context = {
@@ -79,8 +90,6 @@ class MatchingHandlers:
             "list_length": list_length,
             "left_items": left_items,
             "right_items": right_items,
-            "matching_key": encrypted_hash,
-            "encoded_mapping": encoded_mapping,
         }
 
         # Obfuscated mapping: pairs with salt, base64 encoded (OLD - to be removed)
@@ -110,7 +119,7 @@ class MatchingHandlers:
             f"if(!{var_names['tag']}.length)return;try{{"
             f"var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));"
             f"{var_names['tag']}.remove();if({var_names['payload']}&&{var_names['payload']}.pairs)"
-            f"GamesXBlockMatchingInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.pairs);"
+            f"GamesXBlockMatchingInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.pairs,{var_names['payload']}.key);"
             f"}}catch({var_names['err']}){{console.warn('Decode failed');}}}}"
         )
 
