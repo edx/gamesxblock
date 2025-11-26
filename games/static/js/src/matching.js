@@ -14,6 +14,40 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     let keyMapping = null;
     let flatItems = [];
 
+    // Timer variables
+    let timerInterval = null;
+    let timeSeconds = 0;
+
+    // Format time as M:SS or H:MM:SS
+    function formatTime(seconds) {
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+
+        if (hours > 0) {
+            return `${hours}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+        return `${minutes}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // Start timer
+    function startTimer() {
+        if (timerInterval) return; // Prevent multiple timers
+
+        timerInterval = setInterval(function() {
+            timeSeconds++;
+            $('#matching-timer', element).text(formatTime(timeSeconds));
+        }, 1000);
+    }
+
+    // Stop timer
+    function stopTimer() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+
     // Start screen handler
     $('.matching-start-button', element).off('click').on('click', function() {
         if (!matching_key) {
@@ -25,7 +59,7 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         const startButton = $('.matching-start-button', element);
 
         // Show spinner, disable button
-        spinner.show();
+        spinner.addClass('active');
         startButton.prop('disabled', true);
 
         // Extract pairs (flat items) from encoded payload
@@ -43,13 +77,16 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
             success: function(response) {
                 if (response.success && response.data) {
                     keyMapping = response.data;
-                    // Hide start screen, show game
-                    $('.matching-start-screen', element).hide();
+                    // Remove start screen, show game
+                    $('.matching-start-screen', element).remove();
                     $('.matching-grid', element).addClass('active');
                     $('.matching-footer', element).addClass('active');
+
+                    // Start the timer
+                    startTimer();
                 } else {
                     alert('Error loading game: ' + (response.error || 'Unknown error'));
-                    spinner.hide();
+                    spinner.removeClass('active');
                     startButton.prop('disabled', false);
                 }
             },
@@ -65,7 +102,7 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     let firstSelection = null;
     const matched = new Set();
     let matchCount = 0;
-    const totalPairs = pairs.length;
+    const totalPairs = pairs.length / 2;
 
     // Compute real rendered circumference (accounting for viewBox scaling).
     function computeCircumference() {
@@ -90,7 +127,7 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     }
 
     function updateProgress() {
-        $('.matching-progress-text', element).text(matchCount + '/' + totalPairs);
+        $('#matching-progress-count').text(matchCount);
         const progress = totalPairs > 0 ? (matchCount / totalPairs) : 0;
         const circumference = baseCircumference || computeCircumference();
         const offset = circumference * (1 - progress);
@@ -116,6 +153,19 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         b.addClass('matched').removeClass('selected');
         matchCount += 1;
         updateProgress();
+
+        // Check if game is complete
+        if (matchCount >= totalPairs) {
+            stopTimer();
+        }
+
+        setTimeout(() => {
+            $([a, b]).each(function() {
+                $(this).fadeOut(600, function() {
+                    $(this).remove();
+                });
+            });
+        }, 1500);
     }
 
     // Ensure no duplicate click handlers remain from prior inits.

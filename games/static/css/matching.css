@@ -51,10 +51,13 @@
 }
 
 .matching-loading-spinner {
-    display: flex;
+    display: none;
     justify-content: center;
     align-items: center;
     margin-top: 16px;
+}
+.matching-loading-spinner.active {
+    display: flex;
 }
 
 .matching-loading-spinner .spinner {
@@ -178,8 +181,13 @@
     gap: 8px;
 }
 
+.matching-box-wrapper {
+    height: 85px;
+    width: 100%;
+}
+
 .matching-box {
-    display: inline-block;
+    display: block;
     padding: 16px;
     height: 85px;
     overflow: auto;
