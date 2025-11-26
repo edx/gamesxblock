@@ -11,14 +11,17 @@
     <div class="matching-start-screen">
         <h1 class="matching-start-title">Match each term with the correct definition</h1>
         <button class="matching-start-button">Start</button>
+        <div class="matching-loading-spinner" style="display: none;">
+            <div class="spinner"></div>
+        </div>
     </div>
 
     <div class="matching-grid">
         <!-- Left Column (mixed when shuffled) -->
         <div class="matching-column matching-column-left">
             {% for item in left_items %}
-            <div class="matching-box">
-                <span class="matching-box-text">{{item.values|first}}</span>
+            <div class="matching-box" data-index="matching-key-{{item.index}}">
+                <span class="matching-box-text">{{item.text}}</span>
             </div>
             {% endfor %}
         </div>
@@ -26,8 +29,8 @@
         <!-- Right Column (mixed when shuffled) -->
         <div class="matching-column matching-column-right">
             {% for item in right_items %}
-            <div class="matching-box">
-                <span class="matching-box-text">{{item.values|first}}</span>
+            <div class="matching-box" data-index="matching-key-{{item.index}}">
+                <span class="matching-box-text">{{item.text}}</span>
             </div>
             {% endfor %}
         </div>

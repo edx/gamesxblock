@@ -1,5 +1,5 @@
 /* Matching game isolated script */
-function GamesXBlockMatchingInit(runtime, element, pairs) {
+function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     const container = $('.gamesxblock-matching', element);
     if (!container.length || !pairs) return;
 
@@ -10,21 +10,58 @@ function GamesXBlockMatchingInit(runtime, element, pairs) {
     }
     container.data('gx_matching_initialized', true);
 
+    // Store for the decrypted mapping and flat items array
+    let keyMapping = null;
+    let flatItems = [];
+
     // Start screen handler
     $('.matching-start-button', element).off('click').on('click', function() {
-        $('.matching-start-screen', element).hide();
-        $('.matching-grid', element).addClass('active');
-        $('.matching-footer', element).addClass('active');
+        if (!matching_key) {
+            alert('Error: Game not initialized properly');
+            return;
+        }
+
+        const spinner = $('.matching-loading-spinner', element);
+        const startButton = $('.matching-start-button', element);
+
+        // Show spinner, disable button
+        spinner.show();
+        startButton.prop('disabled', true);
+
+        // Extract pairs (flat items) from encoded payload
+        if (pairs && pairs.length > 0) {
+            flatItems = pairs;
+        }
+
+        // Make API call to get key mapping
+        $.ajax({
+            type: 'POST',
+            url: runtime.handlerUrl(element, 'get_matching_key_mapping'),
+            data: JSON.stringify({ matching_key }),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function(response) {
+                if (response.success && response.data) {
+                    keyMapping = response.data;
+                    // Hide start screen, show game
+                    $('.matching-start-screen', element).hide();
+                    $('.matching-grid', element).addClass('active');
+                    $('.matching-footer', element).addClass('active');
+                } else {
+                    alert('Error loading game: ' + (response.error || 'Unknown error'));
+                    spinner.hide();
+                    startButton.prop('disabled', false);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('Failed to start game. Please try again.');
+                spinner.hide();
+                startButton.prop('disabled', false);
+            }
+        });
     });
 
-    // Build bidirectional map (term->definition and definition->term)
-    const matchMap = new Map();
-    pairs.forEach(p => {
-        matchMap.set(p.t, p.d);
-        matchMap.set(p.d, p.t);
-    });
-
-    // Track selections and matched texts
+    // Track selections and matched keys
     let firstSelection = null;
     const matched = new Set();
     let matchCount = 0;
@@ -77,8 +114,6 @@ function GamesXBlockMatchingInit(runtime, element, pairs) {
     function markMatch(a, b) {
         a.addClass('matched').removeClass('selected');
         b.addClass('matched').removeClass('selected');
-        matched.add(a.text().trim());
-        matched.add(b.text().trim());
         matchCount += 1;
         updateProgress();
     }
@@ -86,8 +121,15 @@ function GamesXBlockMatchingInit(runtime, element, pairs) {
     // Ensure no duplicate click handlers remain from prior inits.
     $('.matching-box', element).off('click').on('click', function() {
         const box = $(this);
-        const text = box.text().trim();
-        if (matched.has(text)) return; // already matched
+        const dataIndex = box.data('index');
+
+        // If keyMapping not loaded yet, don't allow clicks
+        if (!keyMapping || !flatItems.length) {
+            return;
+        }
+
+        // Check if already matched
+        if (matched.has(dataIndex)) return;
 
         // Toggle off if re-click first
         if (firstSelection && firstSelection[0].is(box)) {
@@ -99,21 +141,46 @@ function GamesXBlockMatchingInit(runtime, element, pairs) {
         box.addClass('selected');
 
         if (!firstSelection) {
-            firstSelection = [box, text];
+            firstSelection = [box, dataIndex];
             return;
         }
 
         // Second selection
-        const [prevBox, prevText] = firstSelection;
+        const [prevBox, prevIndex] = firstSelection;
         firstSelection = null;
-        if (prevText === text) {
+
+        // Check if same index selected
+        if (prevIndex === dataIndex) {
             clearSelectionVisual(prevBox);
             clearSelectionVisual(box);
             return;
         }
-        const mapped = matchMap.get(prevText);
-        if (mapped && mapped === text) {
+
+        // Extract index numbers from 'matching-key-0' format
+        const prevIdx = parseInt(prevIndex.replace('matching-key-', ''));
+        const currIdx = parseInt(dataIndex.replace('matching-key-', ''));
+
+        // Get randomKeys from flatItems array using indices
+        const prevItem = flatItems[prevIdx];
+        const currItem = flatItems[currIdx];
+
+        if (!prevItem || !currItem) {
+            markIncorrect(prevBox, box);
+            return;
+        }
+
+        // Extract the randomKey from each item (first key in the object)
+        const prevRandomKey = Object.keys(prevItem)[0];
+        const currRandomKey = Object.keys(currItem)[0];
+
+        // Check if pair_id matches using keyMapping
+        const prevPairId = keyMapping[prevRandomKey]?.pair_id;
+        const currPairId = keyMapping[currRandomKey]?.pair_id;
+
+        if (prevPairId !== undefined && prevPairId === currPairId) {
             markMatch(prevBox, box);
+            matched.add(prevIndex);
+            matched.add(dataIndex);
         } else {
             markIncorrect(prevBox, box);
         }
