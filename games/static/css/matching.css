@@ -45,8 +45,8 @@
 
 .matching-progress-wrapper {
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 55px;
+    height: 55px;
 }
 
 .matching-progress-circle {
@@ -58,13 +58,13 @@
 .matching-progress-bg {
     fill: none;
     stroke: var(--light-400, #E1DDDB);
-    stroke-width: 3;
+    stroke-width: 4px;
 }
 
 .matching-progress-bar {
     fill: none;
     stroke: var(--success-500, #0D7D4D);
-    stroke-width: 3;
+    stroke-width: 4px;
     stroke-dasharray: 339.292;
     stroke-dashoffset: 339.292;
     transition: stroke-dashoffset 0.3s ease;
@@ -76,11 +76,15 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: var(--primary-500, #00262B);
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 20px;
+    color: var(--Primary-500, #00262B);
     text-align: center;
+    font-variant-numeric: lining-nums tabular-nums;
+    font-family: Inter;
+    font-size: 17px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 28px; /* 164.706% */
+    letter-spacing: -1.19px;
 }
 
 .matching-help-icon {
@@ -116,7 +120,8 @@
     align-items: center;
     justify-content: center;
     padding: 16px;
-    min-height: 80px;
+    height: 85px;
+    overflow: auto;
     border-radius: 8px;
     border: 2px solid var(--light-300, #F2F0EF);
     background: var(--white, #FFFFFF);

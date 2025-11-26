@@ -20,7 +20,7 @@ class GamesXBlock(XBlock):
     """
 
     title = String(
-        default=DEFAULT.TITLE,
+        default=DEFAULT.MATCHING_TITLE,
         scope=Scope.content,
         help=_("The title of the block to be displayed in the xblock."),
     )
@@ -163,9 +163,6 @@ class GamesXBlock(XBlock):
             # Default fallback
             frag = MatchingHandlers.student_view(self, context)
 
-        """ Common code for both games """
-        frag.add_javascript(self.resource_string("static/js/src/games.js"))
-        frag.initialize_js("GamesXBlock")
         return frag
 
     # Common handlers

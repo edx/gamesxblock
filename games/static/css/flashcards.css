@@ -1,35 +1,105 @@
-/* CSS for Flashcards Game */
-/*Flashcard styles*/
+.gamesxblock-flashcards {
+    font-family: 'Inter', sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.flashcards-header {
+    margin-bottom: 24px;
+}
+
+.flashcards-title {
+    color: var(--primary-500, #00262B);
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 32px;
+    margin: 0;
+}
+
+.flashcards-card-wrapper {
+    perspective: 1000px;
+    margin-bottom: 24px;
+}
+
 .flashcard-block {
+    position: relative;
+    width: 100%;
+    height: 373px;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.flashcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.flashcard-block.flashcard-flipped .flashcard-inner {
+    transform: rotateY(180deg);
+}
+
+.flashcard-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 
     display: flex;
-    height: 373px;
     padding: 24px;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     gap: 24px;
-    flex-shrink: 0;
-    align-self: stretch;
 
     border-radius: 8px;
     border: 2px solid var(--light-300, #F2F0EF);
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-    cursor: pointer;
+    transition: opacity 0.3s ease-in-out;
 }
 
-.image {
-    max-height: 200px;
-    flex-shrink: 0;
+.flashcard-front {
+    z-index: 2;
+    transform: rotateY(0deg);
+}
+
+.flashcard-back {
+    transform: rotateY(180deg);
+}
+
+.flashcard-front-content, .flashcard-back-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    gap: 16px;
+    width: 100%;
 }
 
 .flashcard-text {
     color: var(--primary-500, #00262B);
     font-size: 18px;
-    font-family: Inter;
-    font-style: normal;
     font-weight: 400;
     line-height: 28px;
+    text-align: center;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.image {
+    max-height: 200px;
+    max-width: 100%;
+    object-fit: contain;
+    flex-shrink: 0;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    display: block;
 }
 
 .flashcard-footer {
@@ -45,37 +115,86 @@
     gap: 16px;
 }
 
-.flashcard-left-button, .flashcard-right-button {
+.flashcard-left-button,
+.flashcard-right-button {
     display: flex;
     width: 36px;
     height: 36px;
     padding: 6px;
     justify-content: center;
     align-items: center;
-
-    border-radius: 999999984306749400px;
+    border: none;
+    border-radius: 50%;
     background: var(--light-300, #F2F0EF);
-
     cursor: pointer;
+    transition: all 0.2s ease-in-out;
 }
 
-.flashcard-left-button:hover, .flashcard-right-button:hover {
+.flashcard-left-button:hover:not(:disabled),
+.flashcard-right-button:hover:not(:disabled) {
     background: var(--light-400, #E1DDDB);
+    transform: scale(1.05);
 }
 
-.flashcard-left-image, .flashcard-right-image {
+.flashcard-left-button:active:not(:disabled),
+.flashcard-right-button:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.flashcard-left-button:disabled,
+.flashcard-right-button:disabled {
+    background: var(--light-200, #F9F8F7);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.flashcard-left-button:disabled svg,
+.flashcard-right-button:disabled svg {
+    opacity: 0.5;
+}
+
+.flashcard-left-image,
+.flashcard-right-image {
     width: 24px;
     height: 24px;
     flex-shrink: 0;
+    pointer-events: none;
 }
 
 .flashcard-navigation-text {
     color: var(--primary-500, #00262B);
     text-align: center;
     font-size: 20px;
-    font-family: Inter;
-    font-style: normal;
     font-weight: 500;
     line-height: normal;
+    min-width: 60px;
+}
+
+.flashcard-help-icon {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    padding: 6px;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background 0.2s ease-in-out;
+}
+
+.flashcard-help-icon:hover {
+    background: var(--light-300, #F2F0EF);
+}
+
+.flashcard-help-icon svg {
+    color: var(--primary-500, #00262B);
+}
+
+.flashcard-text.fade-out {
+    opacity: 0;
+}
+
+.flashcard-text.fade-in {
+    opacity: 1;
 }
 

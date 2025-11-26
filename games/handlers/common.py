@@ -1,15 +1,16 @@
 """
 Common handler methods for the Games XBlock.
-
-This module contains handlers that work across all game types.
 """
 
 import hashlib
+import random
+import string
 import uuid
 
 from django.core.files.base import ContentFile
 from django.utils.translation import gettext as _
 from xblock.core import Response
+from xblock.fields import Set, Dict
 
 from games.utils import delete_image, get_gamesxblock_storage
 
@@ -18,6 +19,24 @@ from ..constants import CARD_FIELD, DEFAULT, GAME_TYPE, UPLOAD
 
 class CommonHandlers:
     """Handlers that work across all game types."""
+
+    @staticmethod
+    def generate_unique_var_names(keys, min_len=3, max_len=6, max_attempts=1000):
+        """
+        Generate unique random variable names for obfuscation.
+        """
+        used = set()
+        names = {}
+        for key in keys:
+            for _ in range(max_attempts):
+                name = "".join(random.choices(string.ascii_lowercase, k=random.randint(min_len, max_len)))
+                if name not in used:
+                    used.add(name)
+                    names[key] = name
+                    break
+            else:
+                raise RuntimeError(f"Unable to generate a unique variable name after {max_attempts} attempts. Consider increasing min_len/max_len.")
+        return names
 
     @staticmethod
     def expand_game(xblock, data, suffix=""):
@@ -127,7 +146,7 @@ class CommonHandlers:
 
             validated_cards = []
             for card in new_cards:
-                if not isinstance(card, dict):
+                if not isinstance(card, Dict):
                     return {"success": False, "error": _("Each card must be an object")}
 
                 # Validate required fields
@@ -152,6 +171,10 @@ class CommonHandlers:
                     }
                 )
 
+            if new_game_type == GAME_TYPE.FLASHCARDS:
+                xblock.title = DEFAULT.FLASHCARDS_TITLE
+            else:
+                xblock.title = DEFAULT.MATCHING_TITLE
             xblock.cards = validated_cards
             xblock.game_type = new_game_type
             xblock.is_shuffled = new_is_shuffled
