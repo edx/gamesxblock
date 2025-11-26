@@ -49,8 +49,6 @@ class MatchingHandlers:
 
             left_items.append(
                 {
-                    "idx": idx,
-                    "kind": "term",
                     "key": term_key,
                     "text": term_text,
                 }
@@ -64,8 +62,6 @@ class MatchingHandlers:
 
             right_items.append(
                 {
-                    "idx": idx,
-                    "kind": "definition",
                     "key": def_key,
                     "text": def_text,
                 }
