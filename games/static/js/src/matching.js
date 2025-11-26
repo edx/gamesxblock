@@ -10,6 +10,13 @@ function GamesXBlockMatchingInit(runtime, element, pairs) {
     }
     container.data('gx_matching_initialized', true);
 
+    // Start screen handler
+    $('.matching-start-button', element).off('click').on('click', function() {
+        $('.matching-start-screen', element).hide();
+        $('.matching-grid', element).addClass('active');
+        $('.matching-footer', element).addClass('active');
+    });
+
     // Build bidirectional map (term->definition and definition->term)
     const matchMap = new Map();
     pairs.forEach(p => {
