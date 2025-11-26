@@ -39,6 +39,26 @@ class CommonHandlers:
         return names
 
     @staticmethod
+    def generate_unique_alphanumeric_key(existing_keys=None, key_length=6):
+        """
+        Generate a unique alphanumeric key of specified length.
+        
+        Args:
+            existing_keys: Set of keys to check for uniqueness. If None, uniqueness is not enforced.
+            key_length: Length of the key to generate (default: 6).
+        
+        Returns:
+            A unique alphanumeric string of the specified length.
+        """
+        if existing_keys is None:
+            existing_keys = set()
+        
+        while True:
+            key = "".join(random.choices(string.ascii_letters + string.digits, k=key_length))
+            if key not in existing_keys:
+                return key
+
+    @staticmethod
     def expand_game(xblock, data, suffix=""):
         """A handler to expand the game from its title block."""
         description = _("ERR: self.game_type not defined or invalid")

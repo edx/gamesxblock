@@ -31,64 +31,52 @@ class MatchingHandlers:
         if xblock.is_shuffled and cards:
             random.shuffle(cards)
 
-        # Build mixed column data if shuffled, else original layout
+        # Build column data with random keys
         list_length = len(cards)
-        if xblock.is_shuffled and cards:
-            # Create items for both term and definition
-            all_items = []
-            for idx, card in enumerate(cards):
-                all_items.append(
-                    {
-                        "idx": idx,
-                        "kind": "term",
-                        "id": f"term-{idx}",
-                        "text": card.get("term", ""),
-                    }
-                )
-                all_items.append(
-                    {
-                        "idx": idx,
-                        "kind": "definition",
-                        "id": f"def-{idx}",
-                        "text": card.get("definition", ""),
-                    }
-                )
-            random.shuffle(all_items)
 
-            left_items = []
-            right_items = []
-            for item in all_items:
-                # Ensure each column gets exactly list_length items
-                if len(left_items) < list_length and len(right_items) < list_length:
-                    if random.choice([True, False]):
-                        left_items.append(item)
-                    else:
-                        right_items.append(item)
-                elif len(left_items) < list_length:
-                    left_items.append(item)
-                else:
-                    right_items.append(item)
-        else:
-            # Original separated layout (terms left, definitions right)
-            left_items = []
-            right_items = []
-            for idx, card in enumerate(cards):
-                left_items.append(
-                    {
-                        "idx": idx,
-                        "kind": "term",
-                        "id": f"term-{idx}",
-                        "text": card.get("term", ""),
-                    }
-                )
-                right_items.append(
-                    {
-                        "idx": idx,
-                        "kind": "definition",
-                        "id": f"def-{idx}",
-                        "text": card.get("definition", ""),
-                    }
-                )
+        # Generate random keys for each term and definition
+        existing_keys = set()
+        key_mapping = {}  # Maps random key to actual value
+        left_items = []
+        right_items = []
+
+        for idx, card in enumerate(cards):
+            # Generate random key for term
+            term_key = CommonHandlers.generate_unique_alphanumeric_key(existing_keys)
+            existing_keys.add(term_key)
+            term_text = card.get("term", "")
+            key_mapping[term_key] = {"value": term_text, "pair_id": idx}
+
+            left_items.append(
+                {
+                    "idx": idx,
+                    "kind": "term",
+                    "key": term_key,
+                    "text": term_text,
+                }
+            )
+
+            # Generate random key for definition
+            def_key = CommonHandlers.generate_unique_alphanumeric_key(existing_keys)
+            existing_keys.add(def_key)
+            def_text = card.get("definition", "")
+            key_mapping[def_key] = {"value": def_text, "pair_id": idx}
+
+            right_items.append(
+                {
+                    "idx": idx,
+                    "kind": "definition",
+                    "key": def_key,
+                    "text": def_text,
+                }
+            )
+
+        # Shuffle items if enabled: combine, shuffle, then split
+        if xblock.is_shuffled and cards:
+            all_items = left_items + right_items
+            random.shuffle(all_items)
+            left_items = all_items[:list_length]
+            right_items = all_items[list_length:]
 
         template_context = {
             "title": getattr(xblock, "title", DEFAULT.MATCHING_TITLE),
