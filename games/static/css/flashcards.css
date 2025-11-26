@@ -133,12 +133,12 @@
 .flashcard-left-button:hover:not(:disabled),
 .flashcard-right-button:hover:not(:disabled) {
     background: var(--light-400, #E1DDDB);
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
 .flashcard-left-button:active:not(:disabled),
 .flashcard-right-button:active:not(:disabled) {
-    transform: scale(0.95);
+    transform: scale(0.97);
 }
 
 .flashcard-left-button:disabled,
@@ -189,12 +189,3 @@
 .flashcard-help-icon svg {
     color: var(--primary-500, #00262B);
 }
-
-.flashcard-text.fade-out {
-    opacity: 0;
-}
-
-.flashcard-text.fade-in {
-    opacity: 1;
-}
-
