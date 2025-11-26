@@ -68,21 +68,28 @@ class MatchingHandlers:
         encryption_key = CommonHandlers.generate_encryption_key(xblock)
         encrypted_hash = CommonHandlers.encrypt_data(key_mapping, encryption_key)
 
+        # Create flat list of items in the same order as left_items + right_items
+        all_items = left_items + right_items
+        encoded_mapping = base64.b64encode(
+            json.dumps(all_items).encode()
+        ).decode()
+
         template_context = {
             "title": getattr(xblock, "title", DEFAULT.MATCHING_TITLE),
             "list_length": list_length,
             "left_items": left_items,
             "right_items": right_items,
             "matching_key": encrypted_hash,
+            "encoded_mapping": encoded_mapping,
         }
 
-        # Obfuscated mapping: pairs with salt, base64 encoded
+        # Obfuscated mapping: pairs with salt, base64 encoded (OLD - to be removed)
         salt = "".join(random.choices(string.ascii_letters + string.digits, k=12))
         pairs = []
         for card in cards:
             pairs.append({"t": card.get("term", ""), "d": card.get("definition", "")})
         mapping_payload = {"pairs": pairs, "salt": salt}
-        encoded_mapping = base64.b64encode(
+        old_encoded_mapping = base64.b64encode(
             json.dumps(mapping_payload).encode()
         ).decode()
 

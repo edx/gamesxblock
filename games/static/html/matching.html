@@ -18,7 +18,7 @@
         <div class="matching-column matching-column-left">
             {% for item in left_items %}
             <div class="matching-box">
-                <span class="matching-box-text">{{item.text}}</span>
+                <span class="matching-box-text">{{item.values|first}}</span>
             </div>
             {% endfor %}
         </div>
@@ -27,7 +27,7 @@
         <div class="matching-column matching-column-right">
             {% for item in right_items %}
             <div class="matching-box">
-                <span class="matching-box-text">{{item.text}}</span>
+                <span class="matching-box-text">{{item.values|first}}</span>
             </div>
             {% endfor %}
         </div>
