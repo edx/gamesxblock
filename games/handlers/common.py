@@ -2,7 +2,9 @@
 Common handler methods for the Games XBlock.
 """
 
+import base64
 import hashlib
+import json
 import random
 import string
 import uuid
@@ -11,10 +13,11 @@ from django.core.files.base import ContentFile
 from django.utils.translation import gettext as _
 from xblock.core import Response
 from xblock.fields import Set, Dict
+from cryptography.fernet import Fernet
 
 from games.utils import delete_image, get_gamesxblock_storage
 
-from ..constants import CARD_FIELD, DEFAULT, GAME_TYPE, UPLOAD
+from ..constants import CARD_FIELD, CONFIG, DEFAULT, GAME_TYPE, UPLOAD
 
 
 class CommonHandlers:
@@ -42,21 +45,74 @@ class CommonHandlers:
     def generate_unique_alphanumeric_key(existing_keys=None, key_length=6):
         """
         Generate a unique alphanumeric key of specified length.
-        
+
         Args:
             existing_keys: Set of keys to check for uniqueness. If None, uniqueness is not enforced.
             key_length: Length of the key to generate (default: 6).
-        
+
         Returns:
             A unique alphanumeric string of the specified length.
         """
         if existing_keys is None:
             existing_keys = set()
-        
+
         while True:
             key = "".join(random.choices(string.ascii_letters + string.digits, k=key_length))
             if key not in existing_keys:
                 return key
+
+    @staticmethod
+    def generate_encryption_key(xblock):
+        """
+        Generate a deterministic encryption key based on xblock instance.
+        Uses block_id, usage_id, and a constant salt to ensure consistency per xblock instance.
+
+        Args:
+            xblock: The xblock instance
+
+        Returns:
+            Base64-encoded encryption key
+        """
+        # Create a deterministic seed from xblock identifiers and salt
+        seed_string = f"{xblock.scope_ids.usage_id}:{xblock.scope_ids.def_id}:{CONFIG.ENCRYPTION_SALT}"
+        # Generate a 32-byte key using SHA-256
+        key_bytes = hashlib.sha256(seed_string.encode()).digest()
+        # Fernet requires base64-encoded 32-byte key
+        return base64.urlsafe_b64encode(key_bytes)
+
+    @staticmethod
+    def encrypt_data(data, encryption_key):
+        """
+        Encrypt data using Fernet (symmetric encryption).
+
+        Args:
+            data: Dictionary or any JSON-serializable data to encrypt
+            encryption_key: Base64-encoded encryption key
+
+        Returns:
+            Base64-encoded encrypted string
+        """
+        fernet = Fernet(encryption_key)
+        data_json = json.dumps(data)
+        encrypted_data = fernet.encrypt(data_json.encode())
+        return base64.urlsafe_b64encode(encrypted_data).decode()
+
+    @staticmethod
+    def decrypt_data(encrypted_hash, encryption_key):
+        """
+        Decrypt encrypted data back to original format.
+
+        Args:
+            encrypted_hash: Base64-encoded encrypted string
+            encryption_key: Base64-encoded encryption key
+
+        Returns:
+            Decrypted data (dictionary or original data structure)
+        """
+        fernet = Fernet(encryption_key)
+        encrypted_data = base64.urlsafe_b64decode(encrypted_hash.encode())
+        decrypted_json = fernet.decrypt(encrypted_data).decode()
+        return json.loads(decrypted_json)
 
     @staticmethod
     def expand_game(xblock, data, suffix=""):

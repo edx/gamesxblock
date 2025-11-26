@@ -78,11 +78,16 @@ class MatchingHandlers:
             left_items = all_items[:list_length]
             right_items = all_items[list_length:]
 
+        # Encrypt the key mapping
+        encryption_key = CommonHandlers.generate_encryption_key(xblock)
+        encrypted_hash = CommonHandlers.encrypt_data(key_mapping, encryption_key)
+
         template_context = {
             "title": getattr(xblock, "title", DEFAULT.MATCHING_TITLE),
             "list_length": list_length,
             "left_items": left_items,
             "right_items": right_items,
+            "matching_key": encrypted_hash,
         }
 
         # Obfuscated mapping: pairs with salt, base64 encoded

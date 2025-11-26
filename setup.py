@@ -37,6 +37,7 @@ setup(
         "Django>=2.2",
         "django-waffle==5.0.0",
         "edx-toggles==5.4.1",
+        "cryptography>=3.4.8",
     ],
     entry_points={
         "xblock.v1": [
