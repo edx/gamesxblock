@@ -10,6 +10,7 @@ import uuid
 from django.core.files.base import ContentFile
 from django.utils.translation import gettext as _
 from xblock.core import Response
+from xblock.fields import Set, Dict
 
 from games.utils import delete_image, get_gamesxblock_storage
 
@@ -24,8 +25,8 @@ class CommonHandlers:
         """
         Generate unique random variable names for obfuscation.
         """
-        used: set[str] = set()
-        names: dict[str, str] = {}
+        used = set()
+        names = {}
         for key in keys:
             for _ in range(max_attempts):
                 name = "".join(random.choices(string.ascii_lowercase, k=random.randint(min_len, max_len)))
@@ -145,7 +146,7 @@ class CommonHandlers:
 
             validated_cards = []
             for card in new_cards:
-                if not isinstance(card, dict):
+                if not isinstance(card, Dict):
                     return {"success": False, "error": _("Each card must be an object")}
 
                 # Validate required fields
@@ -171,7 +172,7 @@ class CommonHandlers:
                 )
 
             if new_game_type == GAME_TYPE.FLASHCARDS:
-                xblock.title = DEFAULT.FLASHCARD_TITLE
+                xblock.title = DEFAULT.FLASHCARDS_TITLE
             else:
                 xblock.title = DEFAULT.MATCHING_TITLE
             xblock.cards = validated_cards

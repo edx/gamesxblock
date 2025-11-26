@@ -121,7 +121,7 @@
     justify-content: center;
     padding: 16px;
     height: 85px;
-    overflow: scroll;
+    overflow: auto;
     border-radius: 8px;
     border: 2px solid var(--light-300, #F2F0EF);
     background: var(--white, #FFFFFF);
