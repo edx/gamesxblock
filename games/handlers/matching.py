@@ -47,12 +47,7 @@ class MatchingHandlers:
             term_text = card.get("term", "")
             key_mapping[term_key] = {"value": term_text, "pair_id": idx}
 
-            left_items.append(
-                {
-                    "key": term_key,
-                    "text": term_text,
-                }
-            )
+            left_items.append({term_key: term_text})
 
             # Generate random key for definition
             def_key = CommonHandlers.generate_unique_alphanumeric_key(existing_keys)
@@ -60,12 +55,7 @@ class MatchingHandlers:
             def_text = card.get("definition", "")
             key_mapping[def_key] = {"value": def_text, "pair_id": idx}
 
-            right_items.append(
-                {
-                    "key": def_key,
-                    "text": def_text,
-                }
-            )
+            right_items.append({def_key: def_text})
 
         # Shuffle items if enabled: combine, shuffle, then split
         if xblock.is_shuffled and cards:
@@ -149,6 +139,33 @@ class MatchingHandlers:
         return str(
             "".join(random.choices(string.ascii_letters, k=CONFIG.RANDOM_STRING_LENGTH))
         )
+
+    @staticmethod
+    def get_matching_key_mapping(xblock, data, suffix=""):
+        """
+        Decrypt and return the key mapping for matching game validation.
+        """
+        try:
+            matching_key = data.get("matching_key")
+            if not matching_key:
+                return {
+                    "success": False,
+                    "error": "Missing matching_key parameter"
+                }
+
+            # Generate encryption key and decrypt the mapping
+            encryption_key = CommonHandlers.generate_encryption_key(xblock)
+            key_mapping = CommonHandlers.decrypt_data(matching_key, encryption_key)
+
+            return {
+                "success": True,
+                "data": key_mapping
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "error": f"Failed to decrypt mapping: {str(e)}"
+            }
 
     @staticmethod
     def start_game_matching(xblock, data, suffix=""):
