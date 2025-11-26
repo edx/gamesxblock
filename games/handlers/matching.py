@@ -12,8 +12,8 @@ import string
 import pkg_resources
 from django.template import Context, Template
 from web_fragments.fragment import Fragment
-
-from ..constants import CONFIG, CONTAINER_TYPE
+from ..constants import CONFIG, CONTAINER_TYPE, DEFAULT
+from .common import CommonHandlers
 
 
 class MatchingHandlers:
@@ -91,7 +91,7 @@ class MatchingHandlers:
                 )
 
         template_context = {
-            "title": xblock.title,
+            "title": getattr(xblock, "title", DEFAULT.MATCHING_TITLE),
             "list_length": list_length,
             "left_items": left_items,
             "right_items": right_items,
@@ -108,24 +108,10 @@ class MatchingHandlers:
         ).decode()
 
         # Generate random variable names for obfuscation
-        var_names = {
-            "runtime": "".join(
-                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
-            ),
-            "elem": "".join(
-                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
-            ),
-            "tag": "".join(
-                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
-            ),
-            "payload": "".join(
-                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
-            ),
-            "err": "".join(
-                random.choices(string.ascii_lowercase, k=random.randint(1, 3))
-            ),
-        }
-        # Build dynamically obfuscated decoder as named function
+        var_names = CommonHandlers.generate_unique_var_names(
+            ["runtime", "elem", "tag", "payload", "err"], min_len=1, max_len=3
+        )
+
         # Generate random UUID for the data element
         data_element_id = "".join(
             random.choices(string.ascii_lowercase + string.digits, k=16)

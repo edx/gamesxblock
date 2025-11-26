@@ -17,7 +17,8 @@ class GAME_TYPE:
 class DEFAULT:
     """Default values for XBlock fields."""
 
-    TITLE = "Matching"
+    MATCHING_TITLE = "Matching"
+    FLASHCARDS_TITLE = "Flashcards"
     DISPLAY_NAME = "Games"
     GAME_TYPE = GAME_TYPE.MATCHING
     IS_SHUFFLED = False
@@ -54,4 +55,5 @@ class CONFIG:
     """Configuration values."""
 
     RANDOM_STRING_LENGTH = 6
+    SALT_LENGTH = 12  # Length of random salt added to obfuscated payloads
     MATCHES_PER_PAGE = 5  # Number of matches displayed per page

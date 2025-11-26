@@ -3,6 +3,13 @@ function GamesXBlockMatchingInit(runtime, element, pairs) {
     const container = $('.gamesxblock-matching', element);
     if (!container.length || !pairs) return;
 
+    // Guard against multiple initializations (which would attach duplicate handlers and
+    // inflate matchCount making the game appear to finish early).
+    if (container.data('gx_matching_initialized')) {
+        return;
+    }
+    container.data('gx_matching_initialized', true);
+
     // Build bidirectional map (term->definition and definition->term)
     const matchMap = new Map();
     pairs.forEach(p => {
@@ -16,11 +23,32 @@ function GamesXBlockMatchingInit(runtime, element, pairs) {
     let matchCount = 0;
     const totalPairs = pairs.length;
 
+    // Compute real rendered circumference (accounting for viewBox scaling).
+    function computeCircumference() {
+        const circleEl = $('.matching-progress-bar', element)[0];
+        if (!circleEl) return 0;
+        const r = parseFloat(circleEl.getAttribute('r')) || 0;
+        const svg = circleEl.ownerSVGElement;
+        if (!svg) return 2 * Math.PI * r; // fallback
+        const vbHeight = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal.height : r * 2;
+        const renderedHeight = svg.getBoundingClientRect().height || vbHeight;
+        const scale = vbHeight ? (renderedHeight / vbHeight) : 1;
+        const effectiveR = r * scale;
+        return 2 * Math.PI * effectiveR;
+    }
+
+    const baseCircumference = computeCircumference();
+    if (baseCircumference) {
+        $('.matching-progress-bar', element).css({
+            'stroke-dasharray': baseCircumference,
+            'stroke-dashoffset': baseCircumference
+        });
+    }
+
     function updateProgress() {
         $('.matching-progress-text', element).text(matchCount + '/' + totalPairs);
-        // Update circular progress bar (circumference = 2 * π * r = 2 * π * 54 ≈ 339.292)
-        const circumference = 339.292;
         const progress = totalPairs > 0 ? (matchCount / totalPairs) : 0;
+        const circumference = baseCircumference || computeCircumference();
         const offset = circumference * (1 - progress);
         $('.matching-progress-bar', element).css('stroke-dashoffset', offset);
     }
@@ -48,7 +76,8 @@ function GamesXBlockMatchingInit(runtime, element, pairs) {
         updateProgress();
     }
 
-    $('.matching-box', element).on('click', function() {
+    // Ensure no duplicate click handlers remain from prior inits.
+    $('.matching-box', element).off('click').on('click', function() {
         const box = $(this);
         const text = box.text().trim();
         if (matched.has(text)) return; // already matched

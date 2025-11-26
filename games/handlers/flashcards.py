@@ -1,6 +1,5 @@
-"""Flashcards game handler methods.
-
-This module contains handlers specific to the flashcards game type.
+"""
+Flashcards game handler methods.
 """
 
 import random
@@ -12,6 +11,8 @@ import pkg_resources
 from django.template import Context, Template
 from web_fragments.fragment import Fragment
 
+from ..constants import CARD_FIELD, CONFIG, DEFAULT
+from .common import CommonHandlers
 
 class FlashcardsHandlers:
     """Handlers specific to the flashcards game."""
@@ -25,27 +26,24 @@ class FlashcardsHandlers:
         list_length = len(cards)
 
         # Build payload with salt for light obfuscation (pattern similar to matching)
-        salt = "".join(random.choices(string.ascii_letters + string.digits, k=12))
+        salt = "".join(random.choices(string.ascii_letters + string.digits, k=CONFIG.SALT_LENGTH))
         payload_cards = []
         for card in cards:
             payload_cards.append(
                 {
-                    "t": card.get("term", ""),
-                    "d": card.get("definition", ""),
-                    "i": card.get("image", ""),
+                    "term": card.get(CARD_FIELD.TERM, ""),
+                    "definition": card.get(CARD_FIELD.DEFINITION, ""),
+                    "term_image": card.get(CARD_FIELD.TERM_IMAGE, ""),
+                    "definition_image": card.get(CARD_FIELD.DEFINITION_IMAGE, ""),
                 }
             )
         mapping_payload = {"cards": payload_cards, "salt": salt}
         encoded_mapping = base64.b64encode(json.dumps(mapping_payload).encode()).decode()
 
         # Random variable names for light obfuscation
-        var_names = {
-            "runtime": "".join(random.choices(string.ascii_lowercase, k=random.randint(1, 3))),
-            "elem": "".join(random.choices(string.ascii_lowercase, k=random.randint(1, 3))),
-            "tag": "".join(random.choices(string.ascii_lowercase, k=random.randint(1, 3))),
-            "payload": "".join(random.choices(string.ascii_lowercase, k=random.randint(1, 3))),
-            "err": "".join(random.choices(string.ascii_lowercase, k=random.randint(1, 3))),
-        }
+        var_names = CommonHandlers.generate_unique_var_names(
+            ["runtime", "elem", "tag", "payload", "err"], min_len=3, max_len=6
+        )
 
         # Unique id for embedded data element (script tag)
         data_element_id = "".join(
@@ -65,7 +63,7 @@ class FlashcardsHandlers:
         )
 
         template_context = {
-            "title": getattr(xblock, "title", "Flashcards"),
+            "title": getattr(xblock, "title", DEFAULT.FLASHCARDS_TITLE),
             "list_length": list_length,
             "encoded_mapping": encoded_mapping,
             "obf_decoder": obf_decoder,
