@@ -12,7 +12,6 @@ import uuid
 from django.core.files.base import ContentFile
 from django.utils.translation import gettext as _
 from xblock.core import Response
-from xblock.fields import Set, Dict
 from cryptography.fernet import Fernet
 
 from games.utils import delete_image, get_gamesxblock_storage
@@ -225,7 +224,7 @@ class CommonHandlers:
 
             validated_cards = []
             for card in new_cards:
-                if not isinstance(card, Dict):
+                if not isinstance(card, dict):
                     return {"success": False, "error": _("Each card must be an object")}
 
                 # Validate required fields
