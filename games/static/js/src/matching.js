@@ -3,22 +3,18 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     const container = $('.gamesxblock-matching', element);
     if (!container.length || !pairs) return;
 
-    // Guard against multiple initializations (which would attach duplicate handlers and
-    // inflate matchCount making the game appear to finish early).
+    // Prevent duplicate init that would attach multiple handlers
     if (container.data('gx_matching_initialized')) {
         return;
     }
     container.data('gx_matching_initialized', true);
 
-    // Store for the decrypted mapping and flat items array
     let keyMapping = null;
     let flatItems = [];
 
-    // Timer variables
     let timerInterval = null;
     let timeSeconds = 0;
 
-    // Format time as M:SS or H:MM:SS
     function formatTime(seconds) {
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
@@ -30,9 +26,8 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         return `${minutes}:${String(secs).padStart(2, '0')}`;
     }
 
-    // Start timer
     function startTimer() {
-        if (timerInterval) return; // Prevent multiple timers
+        if (timerInterval) return;
 
         timerInterval = setInterval(function() {
             timeSeconds++;
@@ -40,7 +35,6 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         }, 1000);
     }
 
-    // Stop timer
     function stopTimer() {
         if (timerInterval) {
             clearInterval(timerInterval);
@@ -48,7 +42,6 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         }
     }
 
-    // Refresh game with new shuffled data from backend
     function refreshGame() {
         MatchInit = null;
         $.ajax({
@@ -56,18 +49,14 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
             url: runtime.handlerUrl(element, 'refresh_game'),
             dataType: 'html',
             success: function(html) {
-                // Replace the XBlock content with fresh HTML
                 $(element).html(html);
-                // Look for the obfuscated decoder script and execute it
                 var decoderScript = $(element).find('#obf_decoder_script');
 
                 if (decoderScript.length) {
                     var scriptContent = decoderScript.text();
                     decoderScript.remove();
                     try {
-                        // Execute the script which defines MatchingInit function
                         eval(scriptContent);
-                        // Call MatchingInit if it was defined
                         if (typeof MatchingInit === 'function') {
                             MatchingInit(runtime, element);
                         }
@@ -81,13 +70,11 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
             },
             error: function(xhr, status, error) {
                 console.error('Failed to refresh game:', error);
-                // Fallback to full page reload if partial refresh fails
                 window.location.reload();
             }
         });
     }
 
-    // Start screen handler
     $('.matching-start-button', element).off('click').on('click', function() {
         if (!matching_key) {
             alert('Error: Game not initialized properly');
@@ -97,16 +84,13 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         const spinner = $('.matching-loading-spinner', element);
         const startButton = $('.matching-start-button', element);
 
-        // Show spinner, disable button
         spinner.addClass('active');
         startButton.prop('disabled', true);
 
-        // Extract pairs (flat items) from encoded payload
         if (pairs && pairs.length > 0) {
             flatItems = pairs;
         }
 
-        // Make API call to get key mapping
         $.ajax({
             type: 'POST',
             url: runtime.handlerUrl(element, 'get_matching_key_mapping'),
@@ -116,12 +100,10 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
             success: function(response) {
                 if (response.success && response.data) {
                     keyMapping = response.data;
-                    // Remove start screen, show game
                     $('.matching-start-screen', element).remove();
                     $('.matching-grid', element).addClass('active');
                     $('.matching-footer', element).addClass('active');
 
-                    // Start the timer
                     startTimer();
                 } else {
                     alert('Error loading game: ' + (response.error || 'Unknown error'));
@@ -138,23 +120,20 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     });
 
     $('.matching-end-button', element).off('click').on('click', function() {
-        // Reload the XBlock to start a new game
         refreshGame();
     });
 
-    // Track selections and matched keys
     let firstSelection = null;
     const matched = new Set();
     let matchCount = 0;
     const totalPairs = pairs.length / 2;
 
-    // Compute real rendered circumference (accounting for viewBox scaling).
     function computeCircumference() {
         const circleEl = $('.matching-progress-bar', element)[0];
         if (!circleEl) return 0;
         const r = parseFloat(circleEl.getAttribute('r')) || 0;
         const svg = circleEl.ownerSVGElement;
-        if (!svg) return 2 * Math.PI * r; // fallback
+        if (!svg) return 2 * Math.PI * r;
         const vbHeight = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal.height : r * 2;
         const renderedHeight = svg.getBoundingClientRect().height || vbHeight;
         const scale = vbHeight ? (renderedHeight / vbHeight) : 1;
@@ -198,7 +177,6 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         matchCount += 1;
         updateProgress();
 
-        // Check if game is complete
         if (matchCount >= totalPairs) {
             stopTimer();
             setTimeout(() => {
@@ -217,20 +195,16 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         }, 1500);
     }
 
-    // Ensure no duplicate click handlers remain from prior inits.
     $('.matching-box', element).off('click').on('click', function() {
         const box = $(this);
         const dataIndex = box.data('index');
 
-        // If keyMapping not loaded yet, don't allow clicks
         if (!keyMapping || !flatItems.length) {
             return;
         }
 
-        // Check if already matched
         if (matched.has(dataIndex)) return;
 
-        // Toggle off if re-click first
         if (firstSelection && firstSelection[0].is(box)) {
             clearSelectionVisual(box);
             firstSelection = null;
@@ -244,22 +218,18 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
             return;
         }
 
-        // Second selection
         const [prevBox, prevIndex] = firstSelection;
         firstSelection = null;
 
-        // Check if same index selected
         if (prevIndex === dataIndex) {
             clearSelectionVisual(prevBox);
             clearSelectionVisual(box);
             return;
         }
 
-        // Extract index numbers from 'matching-key-0' format
         const prevIdx = parseInt(prevIndex.replace('matching-key-', ''));
         const currIdx = parseInt(dataIndex.replace('matching-key-', ''));
 
-        // Get randomKeys from flatItems array using indices
         const prevItem = flatItems[prevIdx];
         const currItem = flatItems[currIdx];
 
@@ -268,11 +238,9 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
             return;
         }
 
-        // Extract the randomKey from each item (first key in the object)
         const prevRandomKey = Object.keys(prevItem)[0];
         const currRandomKey = Object.keys(currItem)[0];
 
-        // Check if pair_id matches using keyMapping
         const prevPairId = keyMapping[prevRandomKey]?.pair_id;
         const currPairId = keyMapping[currRandomKey]?.pair_id;
 

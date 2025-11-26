@@ -18,31 +18,22 @@ from .common import CommonHandlers
 
 
 class MatchingHandlers:
-    """Handlers specific to the matching game."""
 
     @staticmethod
     def student_view(xblock, context=None):
-        """
-        The student view for matching game.
-        Uses django template for rendering dynamic content.
-        """
-
-        # Prepare data
+        # Prepare and optionally shuffle cards
         cards = list(xblock.cards) if xblock.cards else []
         if xblock.is_shuffled and cards:
             random.shuffle(cards)
 
-        # Build column data with random keys
         list_length = len(cards)
 
-        # Generate random keys for each term and definition
         existing_keys = set()
-        key_mapping = {}  # Maps random key to actual value
+        key_mapping = {}
         left_items = []
         right_items = []
 
         for idx, card in enumerate(cards):
-            # Generate random key for term
             term_key = CommonHandlers.generate_unique_alphanumeric_key(existing_keys)
             existing_keys.add(term_key)
             term_text = card.get("term", "")
@@ -50,7 +41,6 @@ class MatchingHandlers:
 
             left_items.append({term_key: term_text})
 
-            # Generate random key for definition
             def_key = CommonHandlers.generate_unique_alphanumeric_key(existing_keys)
             existing_keys.add(def_key)
             def_text = card.get("definition", "")
@@ -58,24 +48,18 @@ class MatchingHandlers:
 
             right_items.append({def_key: def_text})
 
-        # Shuffle items if enabled: combine, shuffle, then split
         if xblock.is_shuffled and cards:
             all_items = left_items + right_items
             random.shuffle(all_items)
             left_items = all_items[:list_length]
             right_items = all_items[list_length:]
 
-        # Encrypt the key mapping
         encryption_key = CommonHandlers.generate_encryption_key(xblock)
         encrypted_hash = CommonHandlers.encrypt_data(key_mapping, encryption_key)
 
-        # Create flat list of items in original format for JavaScript (before restructuring)
         flat_items_for_js = left_items + right_items
-
-        # Combine encrypted_hash (matching_key) and flat items into a payload
         mapping_payload = {"key": encrypted_hash, "pairs": flat_items_for_js}
 
-        # Add index to each item for HTML key generation (after creating payload)
         for i, item in enumerate(left_items):
             for key in item:
                 left_items[i] = {"key": key, "text": item[key], "index": i}
@@ -93,7 +77,7 @@ class MatchingHandlers:
             "right_items": right_items,
         }
 
-        # Obfuscated mapping: pairs with salt, base64 encoded (OLD - to be removed)
+        # Legacy mapping for backward compatibility (salted, base64)
         salt = "".join(random.choices(string.ascii_letters + string.digits, k=12))
         pairs = []
         for card in cards:
@@ -103,17 +87,15 @@ class MatchingHandlers:
             json.dumps(mapping_payload).encode()
         ).decode()
 
-        # Generate random variable names for obfuscation
         var_names = CommonHandlers.generate_unique_var_names(
             ["runtime", "elem", "tag", "payload", "err"], min_len=1, max_len=3
         )
 
-        # Generate random UUID for the data element
         data_element_id = "".join(
             random.choices(string.ascii_lowercase + string.digits, k=16)
         )
 
-        # Build dynamically obfuscated decoder as named function
+        # Build obfuscated decoder function; initializes JS via payload
         obf_decoder = (
             f"function MatchingInit({var_names['runtime']},{var_names['elem']}){{"
             f"var {var_names['tag']}=$('#{data_element_id}',{var_names['elem']});"
@@ -129,7 +111,6 @@ class MatchingHandlers:
         template_context["obf_decoder"] = obf_decoder
         template_context["data_element_id"] = data_element_id
 
-        # Render template
         template_str = pkg_resources.resource_string(
             __name__, "../static/html/matching.html"
         ).decode("utf8")
@@ -137,7 +118,6 @@ class MatchingHandlers:
         html = template.render(Context(template_context))
 
         frag = Fragment(html)
-        # Attach matching-specific CSS and JS
         frag.add_css(
             pkg_resources.resource_string(
                 __name__, "../static/css/matching.css"
@@ -153,16 +133,12 @@ class MatchingHandlers:
 
     @staticmethod
     def _random_string():
-        """Generate a random ASCII string of configured length (upper- and lower-case)."""
         return str(
             "".join(random.choices(string.ascii_letters, k=CONFIG.RANDOM_STRING_LENGTH))
         )
 
     @staticmethod
     def get_matching_key_mapping(xblock, data, suffix=""):
-        """
-        Decrypt and return the key mapping for matching game validation.
-        """
         try:
             matching_key = data.get("matching_key")
             if not matching_key:
@@ -171,7 +147,6 @@ class MatchingHandlers:
                     "error": "Missing matching_key parameter"
                 }
 
-            # Generate encryption key and decrypt the mapping
             encryption_key = CommonHandlers.generate_encryption_key(xblock)
             key_mapping = CommonHandlers.decrypt_data(matching_key, encryption_key)
 
@@ -187,13 +162,8 @@ class MatchingHandlers:
 
     @staticmethod
     def refresh_game(xblock, request, suffix=""):
-        """
-        Refresh the game by re-rendering the student view with new shuffled data.
-        Returns HTML fragment that can replace the existing game content.
-        """
         frag = MatchingHandlers.student_view(xblock, context=None)
 
-        # Return the HTML content with appropriate headers
         return Response(
             frag.content,
             content_type='text/html',
@@ -202,27 +172,22 @@ class MatchingHandlers:
 
     @staticmethod
     def start_game_matching(xblock, data, suffix=""):
-        """A handler to begin the matching game."""
-        # Set game fields accordingly
         xblock.game_started = True
         xblock.time_seconds = 0
         xblock.selected_containers = {}
         xblock.match_count = 0
         xblock.matches_remaining = xblock.list_length
 
-        # Create dictionaries and key-value pairs to reference the list based on ids
         for i in range(0, 2 * xblock.list_length, 2):
-            # The ids are random strings stored into an indexed list
             unique_string = MatchingHandlers._random_string()
             while unique_string in xblock.matching_id_list:
                 unique_string = MatchingHandlers._random_string()
-            xblock.matching_id_list.append(unique_string)  # append id at index i
+            xblock.matching_id_list.append(unique_string)
 
             while unique_string in xblock.matching_id_list:
                 unique_string = MatchingHandlers._random_string()
-            xblock.matching_id_list.append(unique_string)  # append id at index i+1
+            xblock.matching_id_list.append(unique_string)
 
-            # The random string ids are the dictionary keys for the indices, types, and content
             xblock.matching_id_dictionary_index[xblock.matching_id_list[i]] = i // 2
             xblock.matching_id_dictionary_index[xblock.matching_id_list[i + 1]] = i // 2
 
@@ -252,8 +217,6 @@ class MatchingHandlers:
 
     @staticmethod
     def update_timer(xblock, data, suffix=""):
-        """Update the timer. This is called every 1000ms by an ajax call."""
-        # Only increment the timer if the game has started
         if xblock.game_started:
             xblock.time_seconds += 1
 
@@ -261,13 +224,10 @@ class MatchingHandlers:
 
     @staticmethod
     def select_container(xblock, data, suffix=""):
-        """Handler for selecting matching game containers and evaluating matches."""
-        # Add a '#' to id for use with jQuery
         id = "#" + data["id"]
         container_type = xblock.matching_id_dictionary_type[data["id"]]
         index = xblock.matching_id_dictionary_index[data["id"]]
 
-        # If no container is selected yet
         if len(xblock.selected_containers) == 0:
             xblock.selected_containers["container1_id"] = id
             xblock.selected_containers["container1_type"] = container_type
@@ -287,10 +247,8 @@ class MatchingHandlers:
                 "time_seconds": xblock.time_seconds,
             }
 
-        # Establish prev_id before conditionals
         prev_id = xblock.selected_containers["container1_id"]
 
-        # If the container referenced by 'id' is already selected, deselect it
         if id == xblock.selected_containers["container1_id"]:
             xblock.selected_containers.clear()
             return {
@@ -308,7 +266,6 @@ class MatchingHandlers:
                 "time_seconds": xblock.time_seconds,
             }
 
-        # Containers with the same type cannot match (i.e. a term with a term, etc.)
         if container_type == xblock.selected_containers["container1_type"]:
             xblock.selected_containers.clear()
             return {
@@ -326,7 +283,6 @@ class MatchingHandlers:
                 "time_seconds": xblock.time_seconds,
             }
 
-        # If the execution gets to this point and the indices are the same, this is a match
         if index == xblock.selected_containers["container1_index"]:
             xblock.selected_containers.clear()
             xblock.match_count += 1
@@ -346,7 +302,6 @@ class MatchingHandlers:
                 "time_seconds": xblock.time_seconds,
             }
 
-        # Not a match
         xblock.selected_containers.clear()
         return {
             "first_selection": False,
@@ -365,7 +320,6 @@ class MatchingHandlers:
 
     @staticmethod
     def end_game_matching(xblock, data, suffix=""):
-        """End the matching game and compare the user's time to the best_time field."""
         xblock.game_started = False
         xblock.time_seconds = 0
         xblock.selected_containers = {}
@@ -377,7 +331,6 @@ class MatchingHandlers:
         new_record = False
         first_attempt = False
 
-        # Update record if it is beaten
         if xblock.best_time is None:
             first_attempt = True
             new_record = True
