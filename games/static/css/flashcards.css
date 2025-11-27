@@ -77,7 +77,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     padding: 24px;
     width: 100%;
     height: 100%;
@@ -174,6 +174,10 @@
     min-width: 60px;
 }
 
+.flashcard-help-wrapper {
+    position: relative;
+}
+
 .flashcard-help-icon {
     display: flex;
     width: 36px;
@@ -192,4 +196,46 @@
 
 .flashcard-help-icon svg {
     color: var(--primary-500, #00262B);
+}
+
+.help-popover {
+    position: absolute;
+    bottom: calc(100% + 12px);
+    right: 0;
+    border-radius: 4px;
+    background: var(--Core-Elm, #00262B);
+    color: #fff;
+    padding: 4px 8px;
+    min-width: 200px;
+    max-width: 280px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.flashcard-help-wrapper:hover .help-popover {
+    opacity: 1;
+    visibility: visible;
+}
+
+.help-popover-content {
+    color: var(--extras-white, #FFF);
+    text-align: center;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+.help-popover-arrow {
+    position: absolute;
+    top: 100%;
+    right: 12px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid var(--primary-500, #00262B);
 }

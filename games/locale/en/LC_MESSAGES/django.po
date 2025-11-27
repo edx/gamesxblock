@@ -47,7 +47,7 @@ msgstr ""
 msgid "ERR: self.game_type not defined or invalid"
 msgstr ""
 
-#: games/handlers/common.py
+#: games/handlers/common.py games/static/html/flashcards.html
 msgid "Click each card to reveal the definition"
 msgstr ""
 
@@ -71,12 +71,8 @@ msgstr ""
 msgid "Next card"
 msgstr ""
 
-#: games/static/html/flashcards.html
+#: games/static/html/flashcards.html games/static/html/matching.html
 msgid "Help"
-msgstr ""
-
-#: games/static/html/flashcards.html
-msgid "Click card to flip"
 msgstr ""
 
 #: games/static/html/matching.html

@@ -88,10 +88,6 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
         e.preventDefault();
         flipCard();
     });
-    $element.find('#flashcard-help').on('click', function(e) {
-        e.preventDefault();
-        flipCard();
-    });
 
     $prevBtn.on('click', function(e) {
         e.preventDefault();
