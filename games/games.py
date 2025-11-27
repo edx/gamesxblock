@@ -115,7 +115,7 @@ class GamesXBlock(XBlock):
         Expected: { "key": "gamesxblock/<block_id>/<hash>.ext" }
         """
         # TODO: Delete API is not integrated yet, will handle this one after API is integrated if any change needed.
-        return CommonHandlers.delete_image(self, data, suffix)
+        return CommonHandlers.delete_image_handler(self, data, suffix)
 
     @XBlock.json_handler
     def save_settings(self, data, suffix=""):

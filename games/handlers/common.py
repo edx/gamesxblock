@@ -193,7 +193,8 @@ class CommonHandlers:
         if not key:
             return {"success": False, "error": "Missing key"}
         try:
-            is_deleted = delete_image(self.asset_storage, key)
+            storage = get_gamesxblock_storage()
+            is_deleted = delete_image(storage, key)
             return {"success": is_deleted, "key": key}
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -221,6 +222,7 @@ class CommonHandlers:
             new_game_type = data.get("game_type", GAME_TYPE.FLASHCARDS)
             new_is_shuffled = data.get("is_shuffled", DEFAULT.IS_SHUFFLED)
             new_cards = data.get("cards", [])
+            display_name = data.get("display_name", DEFAULT.DISPLAY_NAME)
 
             validated_cards = []
             for card in new_cards:
@@ -249,6 +251,7 @@ class CommonHandlers:
                     }
                 )
 
+            xblock.display_name = display_name
             if new_game_type == GAME_TYPE.FLASHCARDS:
                 xblock.title = DEFAULT.FLASHCARDS_TITLE
             else:
