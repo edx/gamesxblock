@@ -90,12 +90,6 @@ class GamesXBlock(XBlock):
 
         return frag
 
-    # Common handlers
-    @XBlock.json_handler
-    def expand_game(self, data, suffix=""):
-        """A handler to expand the game from its title block."""
-        return CommonHandlers.expand_game(self, data, suffix)
-
     @XBlock.json_handler
     def get_settings(self, data, suffix=""):
         """Get game type, cards, and shuffle setting in one call."""

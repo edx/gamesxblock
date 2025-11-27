@@ -10,6 +10,10 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
 
     // DOM references
     var $element = $(element);
+    var $startScreen = $element.find('.flashcards-start-screen');
+    var $startButton = $element.find('.flashcards-start-button');
+    var $cardWrapper = $element.find('.flashcards-card-wrapper');
+    var $footer = $element.find('.flashcard-footer');
     var $card = $element.find('#flashcard-card');
     var $term = $element.find('#flashcard-term');
     var $definition = $element.find('#flashcard-definition');
@@ -83,7 +87,20 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
         }
     }
 
+    // Start game
+    function startGame() {
+        $startScreen.addClass('hidden');
+        $cardWrapper.addClass('active');
+        $footer.addClass('active');
+        renderCard();
+    }
+
     // Event handlers
+    $startButton.on('click', function(e) {
+        e.preventDefault();
+        startGame();
+    });
+
     $card.on('click', function(e) {
         e.preventDefault();
         flipCard();
@@ -125,7 +142,4 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
     $(element).on('remove', function() {
         $(element).off('keydown.flashcards');
     });
-
-    // Initial render
-    renderCard();
 }

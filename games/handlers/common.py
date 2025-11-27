@@ -117,20 +117,6 @@ class CommonHandlers:
         return json.loads(decrypted_json)
 
     @staticmethod
-    def expand_game(xblock, data, suffix=""):
-        """A handler to expand the game from its title block."""
-        description = _("ERR: self.game_type not defined or invalid")
-        if xblock.game_type == GAME_TYPE.FLASHCARDS:
-            description = _("Click each card to reveal the definition")
-        elif xblock.game_type == GAME_TYPE.MATCHING:
-            description = _("Match each term with the correct definition")
-        return {
-            "title": xblock.title,
-            "description": description,
-            "game_type": xblock.game_type,
-        }
-
-    @staticmethod
     def get_settings(xblock, data, suffix=""):
         """Get game type, cards, and shuffle setting in one call."""
         return {

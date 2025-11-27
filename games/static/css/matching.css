@@ -70,7 +70,6 @@
     font-style: normal;
     font-weight: 700;
     margin-bottom: 32px;
-    height: 77px;
 }
 
 .matching-new-best, .matching-prev-best {
@@ -92,6 +91,7 @@
     font-style: normal;
     font-weight: 600;
     margin-bottom: 32px;
+    height: 77px;
 }
 
 .matching-new-end-subtitle {
@@ -163,9 +163,13 @@
     transition: background 0.2s ease;
 }
 
-.matching-end-button:hover,
-.matching-start-button:hover {
-    background: var(--primary-700, #00171A);
+.matching-start-button:hover:not(:disabled) {
+    background: var(--primary-600, #001A1D);
+}
+
+.matching-start-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .matching-loading-spinner {

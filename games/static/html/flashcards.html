@@ -11,6 +11,11 @@
         <h1 class="flashcards-title">{{title}}</h1>
     </div>
 
+    <div class="flashcards-start-screen">
+        <h1 class="flashcards-start-title">{% trans "Click each card to reveal the definition" %}</h1>
+        <button class="flashcards-start-button" {% if list_length <= 0 %}disabled{% endif %}>{% trans "Start" %}</button>
+    </div>
+
     <!-- Main Card Area -->
     <div class="flashcards-card-wrapper">
         <div class="flashcard-block" id="flashcard-card" draggable="false" tabindex="0" role="button" aria-pressed="false">
