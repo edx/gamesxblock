@@ -288,15 +288,14 @@
 }
 
 .matching-box-wrapper {
-    height: 85px;
     width: 100%;
     margin-bottom: 8px;
 }
 
 .matching-box {
     display: block;
-    padding: 16px;
     height: 85px;
+    padding: 16px;
     overflow: auto;
     border-radius: 8px;
     border: 2px solid var(--light-300, #F2F0EF);
@@ -343,6 +342,7 @@
     align-items: center;
     justify-content: center;
     width: 100%;
+    height: 100%;
 }
 
 .matching-footer {
