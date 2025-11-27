@@ -10,7 +10,7 @@
 
     <div class="matching-start-screen">
         <h1 class="matching-start-title">Match each term with the correct definition</h1>
-        <button class="matching-start-button">Start</button>
+        <button class="matching-start-button" {% if list_length <= 0 %}disabled{% endif %}>Start</button>
         <div class="matching-loading-spinner">
             <div class="spinner"></div>
         </div>
