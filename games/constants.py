@@ -22,7 +22,6 @@ class DEFAULT:
     DISPLAY_NAME = "Games"
     GAME_TYPE = GAME_TYPE.MATCHING
     IS_SHUFFLED = False
-    LIST_INDEX = 0
     MATCH_COUNT = 0
     IS_TIMED = False
 

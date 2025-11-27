@@ -269,16 +269,3 @@ class CommonHandlers:
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
-
-    @staticmethod
-    def close_game(xblock, data, suffix=""):
-        """A handler to close the game to its title block."""
-        xblock.game_started = False
-        xblock.time_seconds = 0
-        xblock.match_count = 0
-        xblock.matches_remaining = xblock.list_length
-
-        if xblock.game_type == GAME_TYPE.FLASHCARDS:
-            xblock.term_is_visible = True
-            xblock.list_index = 0
-        return {"title": xblock.title}

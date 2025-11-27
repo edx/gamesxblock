@@ -93,7 +93,7 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
 
         $.ajax({
             type: 'POST',
-            url: runtime.handlerUrl(element, 'get_matching_key_mapping'),
+            url: runtime.handlerUrl(element, 'start_matching_game'),
             data: JSON.stringify({ matching_key }),
             contentType: 'application/json',
             dataType: 'json',
