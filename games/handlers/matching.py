@@ -123,9 +123,19 @@ class MatchingHandlers:
                 __name__, "../static/css/matching.css"
             ).decode("utf8")
         )
+        frag.add_css(
+            pkg_resources.resource_string(
+                __name__, "../static/css/confetti.css"
+            ).decode("utf8")
+        )
         frag.add_javascript(
             pkg_resources.resource_string(
                 __name__, "../static/js/src/matching.js"
+            ).decode("utf8")
+        )
+        frag.add_javascript(
+            pkg_resources.resource_string(
+                __name__, "../static/js/src/confetti.js"
             ).decode("utf8")
         )
         frag.initialize_js("MatchingInit")
@@ -175,7 +185,7 @@ class MatchingHandlers:
         new_time = data["new_time"]
         prev_best_time = xblock.best_time
 
-        if prev_best_time != None or new_time < prev_best_time:
+        if prev_best_time is None or new_time < prev_best_time:
             xblock.best_time = new_time
 
         return {

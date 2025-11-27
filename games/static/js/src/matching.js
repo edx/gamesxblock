@@ -180,10 +180,8 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         if (matchCount >= totalPairs) {
             stopTimer();
             setTimeout(() => {
-                $('.matching-end-screen', element).addClass('active');
-                $('.matching-grid', element).remove();
-                $('.matching-footer', element).remove();
-            }, 1400);
+                completeGame();
+            }, 800);
         }
 
         setTimeout(() => {
@@ -193,6 +191,48 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
                 });
             });
         }, 1500);
+    }
+
+    function completeGame() {
+        $.ajax({
+            type: 'POST',
+            url: runtime.handlerUrl(element, 'complete_matching_game'),
+            data: JSON.stringify({ new_time: timeSeconds }),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function(response) {
+                // response is { new_time: int, prev_best_time: int or null }
+                // if new_time is less than prev_best_time, it's a new record
+                // if prev_best_time is null, it's the first completed game
+                // if prev_best_time is not null and new_time >= prev_best_time, no new record
+
+                $('.matching-end-screen', element).addClass('active');
+                $('.matching-grid', element).remove();
+                $('.matching-footer', element).remove();
+                const { new_time, prev_best_time } = response;
+                if (prev_best_time === null || new_time < prev_best_time) {
+                    $('.matching-new-best', element).addClass('active');
+                    $('.matching-prev-best', element).removeClass('active');
+                    $('#matching-current-result', element).text(formatTime(new_time));
+                    if (prev_best_time !== null) {
+                        $('.matching-new-prev-best', element).addClass('active');
+                        $('#matching-prev-best', element).text(formatTime(prev_best_time));
+                    }
+                } else {
+                    $('.matching-new-best', element).removeClass('active');
+                    $('.matching-prev-best', element).addClass('active');
+                    $('#matching-personal-best-time', element).text(formatTime(prev_best_time));
+                    $('#matching-prev-current-best-time', element).text(formatTime(new_time));
+                }
+
+                if (typeof GamesConfetti !== 'undefined') {
+                    GamesConfetti.trigger($('.confetti-container', element), 20);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to submit score:', error);
+            }
+        });
     }
 
     $('.matching-box', element).off('click').on('click', function() {
