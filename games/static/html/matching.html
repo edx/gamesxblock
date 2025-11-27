@@ -22,7 +22,7 @@
         <div class="matching-column matching-column-left">
             {% for item in left_items %}
             <div class="matching-box-wrapper">
-                <div class="matching-box" data-index="matching-key-{{item.index}}">
+                <div class="matching-box" data-index="matching-key-{{item.index}}" title="{{item.text}}">
                     <span class="matching-box-text">{{item.text}}</span>
                 </div>
             </div>
@@ -33,7 +33,7 @@
         <div class="matching-column matching-column-right">
             {% for item in right_items %}
             <div class="matching-box-wrapper">
-                <div class="matching-box" data-index="matching-key-{{item.index}}">
+                <div class="matching-box" data-index="matching-key-{{item.index}}" title="{{item.text}}">
                     <span class="matching-box-text">{{item.text}}</span>
                 </div>
             </div>

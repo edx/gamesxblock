@@ -63,6 +63,22 @@ msgstr ""
 msgid "Each card must have term and definition"
 msgstr ""
 
+#: games/static/html/flashcards.html
+msgid "Previous card"
+msgstr ""
+
+#: games/static/html/flashcards.html
+msgid "Next card"
+msgstr ""
+
+#: games/static/html/flashcards.html
+msgid "Help"
+msgstr ""
+
+#: games/static/html/flashcards.html
+msgid "Click card to flip"
+msgstr ""
+
 #: games/static/html/matching.html
 msgid "Start"
 msgstr ""

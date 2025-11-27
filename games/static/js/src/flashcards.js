@@ -26,8 +26,11 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
         var card = cards[currentIndex];
 
         // Update content
-        $term.text(card.term || '');
+        $term.text(card.term || '')
+        $('.flashcard-front-content').attr('title', card.term || '');
         $definition.text(card.definition || '');
+        $('.flashcard-back-content').attr('title', card.definition || '');
+
 
         // Handle term image
         if (card.term_image && card.term_image.trim() !== '') {
@@ -82,6 +85,10 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
 
     // Event handlers
     $card.on('click', function(e) {
+        e.preventDefault();
+        flipCard();
+    });
+    $element.find('#flashcard-help').on('click', function(e) {
         e.preventDefault();
         flipCard();
     });
