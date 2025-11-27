@@ -6,6 +6,12 @@
     -ms-user-select: none;
 }
 
+.gamesxblock-flashcards *,
+.gamesxblock-flashcards *::before,
+.gamesxblock-flashcards *::after {
+    box-sizing: inherit;
+}
+
 .flashcards-header {
     margin-bottom: 24px;
 }
@@ -79,7 +85,6 @@
     align-items: center;
     justify-content: center;
     padding: 24px;
-    width: 100%;
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;

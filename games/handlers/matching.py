@@ -49,10 +49,8 @@ class MatchingHandlers:
             right_items.append({def_key: def_text})
 
         if xblock.is_shuffled and cards:
-            all_items = left_items + right_items
-            random.shuffle(all_items)
-            left_items = all_items[:list_length]
-            right_items = all_items[list_length:]
+            random.shuffle(left_items)
+            random.shuffle(right_items)
 
         encryption_key = CommonHandlers.generate_encryption_key(xblock)
         encrypted_hash = CommonHandlers.encrypt_data(key_mapping, encryption_key)
