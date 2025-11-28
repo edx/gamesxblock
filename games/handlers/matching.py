@@ -21,59 +21,82 @@ class MatchingHandlers:
 
     @staticmethod
     def student_view(xblock, context=None):
-        # Prepare and optionally shuffle cards
+        # Prepare cards
         cards = list(xblock.cards) if xblock.cards else []
-        if xblock.is_shuffled and cards:
-            random.shuffle(cards)
-
         list_length = len(cards)
 
-        existing_keys = set()
-        key_mapping = {}
-        left_items = []
-        right_items = []
+        # Split cards into pages based on MATCHES_PER_PAGE
+        matches_per_page = CONFIG.MATCHES_PER_PAGE
+        pages = []
+        for i in range(0, len(cards), matches_per_page):
+            page_cards = cards[i:i + matches_per_page]
+            pages.append(page_cards)
 
-        for idx, card in enumerate(cards):
-            term_key = CommonHandlers.generate_unique_alphanumeric_key(existing_keys)
-            existing_keys.add(term_key)
-            term_text = card.get("term", "")
-            key_mapping[term_key] = {"value": term_text, "pair_id": idx}
+        # Pre-generate all random keys in one batch (hex digits for maximum confusion)
+        total_items = len(cards) * 2
+        key_length = CONFIG.RANDOM_STRING_LENGTH
+        bits_needed = key_length * 4  # Each hex char = 4 bits
+        all_keys = [format(random.getrandbits(bits_needed), f'0{key_length}x') for _ in range(total_items)]
 
-            left_items.append({term_key: term_text})
+        # Pre-allocate array with None slots (will be filled with {key, index} objects)
+        matched_entries = [None] * total_items
+        all_pages_data = []
 
-            def_key = CommonHandlers.generate_unique_alphanumeric_key(existing_keys)
-            existing_keys.add(def_key)
-            def_text = card.get("definition", "")
-            key_mapping[def_key] = {"value": def_text, "pair_id": idx}
+        # Process each page with unique incremental indices per item (term + definition distinct)
+        global_counter = 0
+        for page_idx, page_cards in enumerate(pages):
+            left_items = []
+            right_items = []
 
-            right_items.append({def_key: def_text})
+            for card in page_cards:
+                # Generate term item
+                term_index = global_counter
+                term_key = all_keys[term_index]
+                term_text = card.get("term", "")
+                left_items.append({"text": term_text, "index": term_index})
+                global_counter += 1
 
-        if xblock.is_shuffled and cards:
-            random.shuffle(left_items)
-            random.shuffle(right_items)
+                # Generate definition item
+                def_index = global_counter
+                def_key = all_keys[def_index]
+                def_text = card.get("definition", "")
+                right_items.append({"text": def_text, "index": def_index})
+                global_counter += 1
+
+                # Add bidirectional mapping entries as UUID-like strings for obfuscation
+                matched_entries[term_index] = CommonHandlers.format_as_uuid_like(term_key, def_index)
+                matched_entries[def_index] = CommonHandlers.format_as_uuid_like(def_key, term_index)
+
+            # Shuffle left and right items per page if enabled
+            if xblock.is_shuffled:
+                random.shuffle(left_items)
+                random.shuffle(right_items)
+
+            all_pages_data.append({
+                "left_items": left_items,
+                "right_items": right_items
+            })
+
+        # Pages are already structured with global indices
+        formatted_pages = all_pages_data
 
         encryption_key = CommonHandlers.generate_encryption_key(xblock)
-        encrypted_hash = CommonHandlers.encrypt_data(key_mapping, encryption_key)
+        encrypted_hash = CommonHandlers.encrypt_data(matched_entries, encryption_key)
 
-        flat_items_for_js = left_items + right_items
-        mapping_payload = {"key": encrypted_hash, "pairs": flat_items_for_js}
-
-        for i, item in enumerate(left_items):
-            for key in item:
-                left_items[i] = {"key": key, "text": item[key], "index": i}
-        for i, item in enumerate(right_items):
-            for key in item:
-                right_items[i] = {"key": key, "text": item[key], "index": i + list_length}
+        # Include all pages data in payload; encrypted "key" now holds list of pairs
+        mapping_payload = {"key": encrypted_hash, "pages": formatted_pages}
         encoded_mapping = base64.b64encode(
             json.dumps(mapping_payload).encode()
         ).decode()
 
+        total_pages = len(pages)
+
         template_context = {
             "title": getattr(xblock, "title", DEFAULT.MATCHING_TITLE),
             "list_length": list_length,
-            "left_items": left_items,
-            "right_items": right_items,
+            "all_pages": formatted_pages,
             "has_timer": getattr(xblock, "has_timer", DEFAULT.HAS_TIMER),
+            "total_pages": total_pages,
         }
 
         var_names = CommonHandlers.generate_unique_var_names(
@@ -90,8 +113,8 @@ class MatchingHandlers:
             f"var {var_names['tag']}=$('#{data_element_id}',{var_names['elem']});"
             f"if(!{var_names['tag']}.length)return;try{{"
             f"var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));"
-            f"{var_names['tag']}.remove();if({var_names['payload']}&&{var_names['payload']}.pairs)"
-            f"GamesXBlockMatchingInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.pairs,{var_names['payload']}.key);"
+            f"{var_names['tag']}.remove();if({var_names['payload']}&&{var_names['payload']}.pages)"
+            f"GamesXBlockMatchingInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.pages,{var_names['payload']}.key);"
             f"$('#obf_decoder_script',{var_names['elem']}).remove();"
             f"}}catch({var_names['err']}){{console.warn('Decode failed');}}}}"
         )
@@ -129,12 +152,6 @@ class MatchingHandlers:
         )
         frag.initialize_js("MatchingInit")
         return frag
-
-    @staticmethod
-    def _random_string():
-        return str(
-            "".join(random.choices(string.ascii_letters, k=CONFIG.RANDOM_STRING_LENGTH))
-        )
 
     @staticmethod
     def get_matching_key_mapping(xblock, data, suffix=""):

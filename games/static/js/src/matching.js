@@ -1,9 +1,9 @@
 /* Matching game isolated script */
-function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
+function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
     const container = $('.gamesxblock-matching', element);
     const has_timer = $(container).data('timed') === true || $(container).data('timed') === 'true';
 
-    if (!container.length || !pairs) return;
+    if (!container.length || !pages) return;
 
     // Prevent duplicate init that would attach multiple handlers
     if (container.data('gx_matching_initialized')) {
@@ -11,8 +11,10 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     }
     container.data('gx_matching_initialized', true);
 
-    let keyMapping = null;
-    let flatItems = [];
+    let indexLink = null; // maps self_index -> partner_index
+    let allPages = pages;
+    let currentPageIndex = 0;
+    let totalPages = pages.length;
 
     let timerInterval = null;
     let timeSeconds = 0;
@@ -89,10 +91,6 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         spinner.addClass('active');
         startButton.prop('disabled', true);
 
-        if (pairs && pairs.length > 0) {
-            flatItems = pairs;
-        }
-
         $.ajax({
             type: 'POST',
             url: runtime.handlerUrl(element, 'start_matching_game'),
@@ -101,7 +99,25 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
             dataType: 'json',
             success: function(response) {
                 if (response.success && response.data) {
-                    keyMapping = response.data;
+                    const entries = response.data;
+                    indexLink = {};
+                    if (Array.isArray(entries)) {
+                        entries.forEach((entry, selfIdx) => {
+                            if (entry && typeof entry === 'string') {
+                                const parts = entry.split('-');
+                                if (parts.length === 5) {
+                                    const indexHex = parts[1] + parts[3];
+                                    indexLink[selfIdx] = parseInt(indexHex, 16);
+                                }
+                            }
+                        });
+                    }
+
+                    // Set current page pair count
+                    if (allPages && allPages[currentPageIndex]) {
+                        currentPagePairs = allPages[currentPageIndex].left_items.length;
+                    }
+
                     $('.matching-start-screen', element).remove();
                     $('.matching-grid', element).addClass('active');
                     $('.matching-footer', element).addClass('active');
@@ -130,7 +146,7 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     let firstSelection = null;
     const matched = new Set();
     let matchCount = 0;
-    const totalPairs = pairs.length / 2;
+    let currentPagePairs = 0;
 
     function computeCircumference() {
         const circleEl = $('.matching-progress-bar', element)[0];
@@ -154,8 +170,9 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     }
 
     function updateProgress() {
-        $('#matching-progress-count').text(matchCount);
-        const progress = totalPairs > 0 ? (matchCount / totalPairs) : 0;
+        const completedPages = currentPageIndex;
+        $('#matching-progress-count').text(completedPages);
+        const progress = totalPages > 0 ? (completedPages / totalPages) : 0;
         const circumference = baseCircumference || computeCircumference();
         const offset = circumference * (1 - progress);
         $('.matching-progress-bar', element).css('stroke-dashoffset', offset);
@@ -175,19 +192,73 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         }, 600);
     }
 
+    function loadNextPage() {
+        // Increment page index
+        currentPageIndex += 1;
+        updateProgress();
+
+        // Reset match count for new page
+        matchCount = 0;
+        matched.clear();
+        firstSelection = null;
+
+        // Get next page data
+        const nextPage = allPages[currentPageIndex];
+        if (!nextPage) return;
+
+        currentPagePairs = nextPage.left_items.length;
+
+        // Clear current boxes
+        $('.matching-column-left', element).empty();
+        $('.matching-column-right', element).empty();
+
+        // Render left items
+        nextPage.left_items.forEach(item => {
+            const wrapper = $('<div class="matching-box-wrapper"></div>');
+            const box = $('<div class="matching-box"></div>')
+                .attr('data-index', `matching-key-${item.index}`)
+                .attr('title', item.text);
+            const text = $('<span class="matching-box-text"></span>').text(item.text);
+            box.append(text);
+            wrapper.append(box);
+            $('.matching-column-left', element).append(wrapper);
+        });
+
+        // Render right items
+        nextPage.right_items.forEach(item => {
+            const wrapper = $('<div class="matching-box-wrapper"></div>');
+            const box = $('<div class="matching-box"></div>')
+                .attr('data-index', `matching-key-${item.index}`)
+                .attr('title', item.text);
+            const text = $('<span class="matching-box-text"></span>').text(item.text);
+            box.append(text);
+            wrapper.append(box);
+            $('.matching-column-right', element).append(wrapper);
+        });
+
+        // Re-attach click handlers to new boxes
+        attachBoxClickHandlers();
+    }
+
     function markMatch(a, b) {
         a.addClass('matched').removeClass('selected');
         b.addClass('matched').removeClass('selected');
         matchCount += 1;
-        updateProgress();
 
-        if (matchCount >= totalPairs) {
-            if (has_timer) {
-                stopTimer();
+        // Check if current page is complete
+        if (matchCount >= currentPagePairs) {
+            // Check if there are more pages
+            if (currentPageIndex + 1 < totalPages) {
+                loadNextPage();
+            } else {
+                // All pages complete - end game
+                if (has_timer) {
+                    stopTimer();
+                }
+                setTimeout(() => {
+                    completeGame();
+                }, 800);
             }
-            setTimeout(() => {
-                completeGame();
-            }, 800);
         }
 
         setTimeout(() => {
@@ -241,15 +312,14 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         });
     }
 
-    $('.matching-box', element).off('click').on('click', function() {
+    function handleBoxClick() {
         const box = $(this);
-        const dataIndex = box.data('index');
-
-        if (!keyMapping || !flatItems.length) {
-            return;
-        }
-
-        if (matched.has(dataIndex)) return;
+        if (!indexLink) return;
+        const idxStr = box.data('index');
+        if (!idxStr) return;
+        const idx = parseInt(idxStr.replace('matching-key-', ''), 10);
+        if (Number.isNaN(idx)) return;
+        if (matched.has(idx)) return;
 
         if (firstSelection && firstSelection[0].is(box)) {
             clearSelectionVisual(box);
@@ -258,45 +328,34 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         }
 
         box.addClass('selected');
-
         if (!firstSelection) {
-            firstSelection = [box, dataIndex];
+            firstSelection = [box, idx];
             return;
         }
 
-        const [prevBox, prevIndex] = firstSelection;
+        const [prevBox, prevIdx] = firstSelection;
         firstSelection = null;
-
-        if (prevIndex === dataIndex) {
+        if (prevIdx === idx) {
             clearSelectionVisual(prevBox);
             clearSelectionVisual(box);
             return;
         }
 
-        const prevIdx = parseInt(prevIndex.replace('matching-key-', ''));
-        const currIdx = parseInt(dataIndex.replace('matching-key-', ''));
-
-        const prevItem = flatItems[prevIdx];
-        const currItem = flatItems[currIdx];
-
-        if (!prevItem || !currItem) {
-            markIncorrect(prevBox, box);
-            return;
-        }
-
-        const prevRandomKey = Object.keys(prevItem)[0];
-        const currRandomKey = Object.keys(currItem)[0];
-
-        const prevPairId = keyMapping[prevRandomKey]?.pair_id;
-        const currPairId = keyMapping[currRandomKey]?.pair_id;
-
-        if (prevPairId !== undefined && prevPairId === currPairId) {
+        const partnerOfPrev = indexLink[prevIdx];
+        const partnerOfCurr = indexLink[idx];
+        if (partnerOfPrev === idx && partnerOfCurr === prevIdx) {
             markMatch(prevBox, box);
-            matched.add(prevIndex);
-            matched.add(dataIndex);
+            matched.add(prevIdx);
+            matched.add(idx);
         } else {
             markIncorrect(prevBox, box);
         }
-    });
+    }
+
+    function attachBoxClickHandlers() {
+        $('.matching-box', element).off('click').on('click', handleBoxClick);
+    }
+
+    attachBoxClickHandlers();
 }
 

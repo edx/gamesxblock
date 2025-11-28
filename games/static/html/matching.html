@@ -20,34 +20,40 @@
     <div class="matching-grid">
         <!-- Left Column (mixed when shuffled) -->
         <div class="matching-column matching-column-left">
-            {% for item in left_items %}
-            <div class="matching-box-wrapper">
-                <div class="matching-box" data-index="matching-key-{{item.index}}" title="{{item.text}}">
-                    <span class="matching-box-text">{{item.text}}</span>
+            {% if all_pages %}
+                {% for item in all_pages.0.left_items %}
+                <div class="matching-box-wrapper">
+                    <div class="matching-box" data-index="matching-key-{{item.index}}" title="{{item.text}}">
+                        <span class="matching-box-text">{{item.text}}</span>
+                    </div>
                 </div>
-            </div>
-            {% endfor %}
+                {% endfor %}
+            {% endif %}
         </div>
 
         <!-- Right Column (mixed when shuffled) -->
         <div class="matching-column matching-column-right">
-            {% for item in right_items %}
-            <div class="matching-box-wrapper">
-                <div class="matching-box" data-index="matching-key-{{item.index}}" title="{{item.text}}">
-                    <span class="matching-box-text">{{item.text}}</span>
+            {% if all_pages %}
+                {% for item in all_pages.0.right_items %}
+                <div class="matching-box-wrapper">
+                    <div class="matching-box" data-index="matching-key-{{item.index}}" title="{{item.text}}">
+                        <span class="matching-box-text">{{item.text}}</span>
+                    </div>
                 </div>
-            </div>
-            {% endfor %}
+                {% endfor %}
+            {% endif %}
         </div>
     </div>
 
     <div class="matching-footer">
         <div class="matching-progress-wrapper">
+            {% if total_pages > 1 %}
             <svg class="matching-progress-circle" xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55" fill="none">
                 <circle class="matching-progress-bg" cx="27.0213" cy="27.0213" r="25.0213" stroke-width="4" />
                 <circle class="matching-progress-bar" cx="27.0213" cy="27.0213" r="25.0213" stroke-width="4" />
             </svg>
-            <div class="matching-progress-text"><span id="matching-progress-count">0</span>/{{list_length}}</div>
+            <div class="matching-progress-text"><span id="matching-progress-count">0</span>/{{total_pages}}</div>
+            {% endif %}
         </div>
         {% if has_timer %}
         <div class="matching-timer" id="matching-timer">0:00</div>

@@ -41,26 +41,6 @@ class CommonHandlers:
         return names
 
     @staticmethod
-    def generate_unique_alphanumeric_key(existing_keys=None, key_length=6):
-        """
-        Generate a unique alphanumeric key of specified length.
-
-        Args:
-            existing_keys: Set of keys to check for uniqueness. If None, uniqueness is not enforced.
-            key_length: Length of the key to generate (default: 6).
-
-        Returns:
-            A unique alphanumeric string of the specified length.
-        """
-        if existing_keys is None:
-            existing_keys = set()
-
-        while True:
-            key = "".join(random.choices(string.ascii_letters + string.digits, k=key_length))
-            if key not in existing_keys:
-                return key
-
-    @staticmethod
     def generate_encryption_key(xblock):
         """
         Generate encryption key using block_id and salt.
@@ -263,3 +243,23 @@ class CommonHandlers:
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
+
+    @staticmethod
+    def format_as_uuid_like(key_hex, index):
+        """
+        Format key and index as UUID-like string for maximum obfuscation.
+        Format: key-index_part1-rand4-index_part2-rand12
+
+        Args:
+            key_hex: 8-char hex string (key)
+            index: integer index
+
+        Returns:
+            UUID-like formatted string (36 chars total: 8-4-4-4-12)
+        """
+        index_hex = format(index, '08x')
+        index_part1 = index_hex[:4]
+        index_part2 = index_hex[4:]
+        rand_4 = format(random.getrandbits(16), '04x')
+        rand_12 = format(random.getrandbits(48), '012x')
+        return f"{key_hex}-{index_part1}-{rand_4}-{index_part2}-{rand_12}"
