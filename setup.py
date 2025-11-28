@@ -44,5 +44,5 @@ setup(
             "games = games:GamesXBlock",
         ]
     },
-    package_data=package_data("games", ["static", "public", "locale"]),
+    package_data=package_data("games", ["static", "locale"]),
 )

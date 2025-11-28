@@ -1,6 +1,8 @@
 /* Matching game isolated script */
 function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
     const container = $('.gamesxblock-matching', element);
+    const has_timer = $(container).data('timed') === true || $(container).data('timed') === 'true';
+
     if (!container.length || !pairs) return;
 
     // Prevent duplicate init that would attach multiple handlers
@@ -104,7 +106,9 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
                     $('.matching-grid', element).addClass('active');
                     $('.matching-footer', element).addClass('active');
 
-                    startTimer();
+                    if (has_timer) {
+                        startTimer();
+                    }
                 } else {
                     alert('Error loading game: ' + (response.error || 'Unknown error'));
                     spinner.removeClass('active');
@@ -178,7 +182,9 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         updateProgress();
 
         if (matchCount >= totalPairs) {
-            stopTimer();
+            if (has_timer) {
+                stopTimer();
+            }
             setTimeout(() => {
                 completeGame();
             }, 800);
@@ -197,7 +203,7 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
         $.ajax({
             type: 'POST',
             url: runtime.handlerUrl(element, 'complete_matching_game'),
-            data: JSON.stringify({ new_time: timeSeconds }),
+            data: JSON.stringify({ new_time: has_timer ? timeSeconds : null }),
             contentType: 'application/json',
             dataType: 'json',
             success: function(response) {
@@ -212,14 +218,14 @@ function GamesXBlockMatchingInit(runtime, element, pairs, matching_key) {
                 const { new_time, prev_best_time } = response;
                 if (prev_best_time === null || new_time < prev_best_time) {
                     $('.matching-new-best', element).addClass('active');
-                    $('.matching-prev-best', element).removeClass('active');
+                    $('.matching-prev-best', element).remove();
                     $('#matching-current-result', element).text(formatTime(new_time));
                     if (prev_best_time !== null) {
                         $('.matching-new-prev-best', element).addClass('active');
                         $('#matching-prev-best', element).text(formatTime(prev_best_time));
                     }
                 } else {
-                    $('.matching-new-best', element).removeClass('active');
+                    $('.matching-new-best', element).remove();
                     $('.matching-prev-best', element).addClass('active');
                     $('#matching-personal-best-time', element).text(formatTime(prev_best_time));
                     $('#matching-prev-current-best-time', element).text(formatTime(new_time));

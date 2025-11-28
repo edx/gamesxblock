@@ -73,17 +73,8 @@ class MatchingHandlers:
             "list_length": list_length,
             "left_items": left_items,
             "right_items": right_items,
+            "has_timer": getattr(xblock, "has_timer", DEFAULT.HAS_TIMER),
         }
-
-        # Legacy mapping for backward compatibility (salted, base64)
-        salt = "".join(random.choices(string.ascii_letters + string.digits, k=12))
-        pairs = []
-        for card in cards:
-            pairs.append({"t": card.get("term", ""), "d": card.get("definition", "")})
-        mapping_payload = {"pairs": pairs, "salt": salt}
-        old_encoded_mapping = base64.b64encode(
-            json.dumps(mapping_payload).encode()
-        ).decode()
 
         var_names = CommonHandlers.generate_unique_var_names(
             ["runtime", "elem", "tag", "payload", "err"], min_len=1, max_len=3

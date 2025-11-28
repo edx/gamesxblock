@@ -123,6 +123,7 @@ class CommonHandlers:
             "game_type": xblock.game_type,
             "cards": xblock.cards,
             "is_shuffled": xblock.is_shuffled,
+            "has_timer": xblock.has_timer,
         }
 
     @staticmethod
@@ -193,6 +194,7 @@ class CommonHandlers:
         {
             'game_type': 'flashcards' or 'matching',
             'is_shuffled': true or false,
+            'has_timer': true or false,
             'cards': [
                 {
                     'term': 'Term 1',
@@ -207,6 +209,7 @@ class CommonHandlers:
         try:
             new_game_type = data.get("game_type", GAME_TYPE.FLASHCARDS)
             new_is_shuffled = data.get("is_shuffled", DEFAULT.IS_SHUFFLED)
+            new_has_timer = data.get("has_timer", DEFAULT.HAS_TIMER)
             new_cards = data.get("cards", [])
             display_name = data.get("display_name", DEFAULT.DISPLAY_NAME)
 
@@ -245,6 +248,7 @@ class CommonHandlers:
             xblock.cards = validated_cards
             xblock.game_type = new_game_type
             xblock.is_shuffled = new_is_shuffled
+            xblock.has_timer = new_has_timer
             xblock.list_length = len(validated_cards)
 
             xblock.save()
@@ -255,6 +259,7 @@ class CommonHandlers:
                 "cards": xblock.cards,
                 "count": len(xblock.cards),
                 "is_shuffled": xblock.is_shuffled,
+                "has_timer": xblock.has_timer,
             }
         except Exception as e:
             return {"success": False, "error": str(e)}

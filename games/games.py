@@ -61,6 +61,12 @@ class GamesXBlock(XBlock):
         help=_("Whether the cards should be shuffled"),
     )
 
+    has_timer = Boolean(
+        default=DEFAULT.HAS_TIMER,
+        scope=Scope.settings,
+        help=_("Whether the game should have a timer"),
+    )
+
     """
     #Following fields for editor only
     timer = Boolean(

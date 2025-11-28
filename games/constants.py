@@ -22,8 +22,7 @@ class DEFAULT:
     DISPLAY_NAME = "Games"
     GAME_TYPE = GAME_TYPE.MATCHING
     IS_SHUFFLED = False
-    MATCH_COUNT = 0
-    IS_TIMED = False
+    HAS_TIMER = False
 
 
 class CARD_FIELD:
