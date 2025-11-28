@@ -21,7 +21,7 @@ def package_data(pkg, roots):
 
 setup(
     name="edx-games",
-    version="1.0.2",
+    version="1.0.3",
     description="Interactive games XBlock for Open edX - Create flashcards and matching games with image support",
     author="edX",
     author_email="edx@edx.org",
@@ -37,6 +37,7 @@ setup(
         "Django>=2.2",
         "django-waffle==5.0.0",
         "edx-toggles==5.4.1",
+        "cryptography>=3.4.8",
     ],
     entry_points={
         "xblock.v1": [

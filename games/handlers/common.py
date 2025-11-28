@@ -2,7 +2,9 @@
 Common handler methods for the Games XBlock.
 """
 
+import base64
 import hashlib
+import json
 import random
 import string
 import uuid
@@ -10,11 +12,11 @@ import uuid
 from django.core.files.base import ContentFile
 from django.utils.translation import gettext as _
 from xblock.core import Response
-from xblock.fields import Set, Dict
+from cryptography.fernet import Fernet
 
 from games.utils import delete_image, get_gamesxblock_storage
 
-from ..constants import CARD_FIELD, DEFAULT, GAME_TYPE, UPLOAD
+from ..constants import CARD_FIELD, CONFIG, DEFAULT, GAME_TYPE, UPLOAD
 
 
 class CommonHandlers:
@@ -39,18 +41,80 @@ class CommonHandlers:
         return names
 
     @staticmethod
-    def expand_game(xblock, data, suffix=""):
-        """A handler to expand the game from its title block."""
-        description = _("ERR: self.game_type not defined or invalid")
-        if xblock.game_type == GAME_TYPE.FLASHCARDS:
-            description = _("Click each card to reveal the definition")
-        elif xblock.game_type == GAME_TYPE.MATCHING:
-            description = _("Match each term with the correct definition")
-        return {
-            "title": xblock.title,
-            "description": description,
-            "game_type": xblock.game_type,
-        }
+    def generate_unique_alphanumeric_key(existing_keys=None, key_length=6):
+        """
+        Generate a unique alphanumeric key of specified length.
+
+        Args:
+            existing_keys: Set of keys to check for uniqueness. If None, uniqueness is not enforced.
+            key_length: Length of the key to generate (default: 6).
+
+        Returns:
+            A unique alphanumeric string of the specified length.
+        """
+        if existing_keys is None:
+            existing_keys = set()
+
+        while True:
+            key = "".join(random.choices(string.ascii_letters + string.digits, k=key_length))
+            if key not in existing_keys:
+                return key
+
+    @staticmethod
+    def generate_encryption_key(xblock):
+        """
+        Generate encryption key using block_id and salt.
+        Uses a consistent identifier that doesn't change across requests.
+
+        Args:
+            xblock: The xblock instance
+
+        Returns:
+            Base64-encoded encryption key (bytes)
+        """
+        # Use block_id (which is stable) and the encryption salt
+        block_id = str(xblock.scope_ids.usage_id.block_id)
+        seed_string = f"{block_id}:{CONFIG.ENCRYPTION_SALT}"
+
+        # Generate a 32-byte key using SHA-256
+        key_bytes = hashlib.sha256(seed_string.encode()).digest()
+
+        # Fernet requires base64-encoded 32-byte key
+        return base64.urlsafe_b64encode(key_bytes)
+
+    @staticmethod
+    def encrypt_data(data, encryption_key):
+        """
+        Encrypt data using Fernet (symmetric encryption).
+
+        Args:
+            data: Dictionary or any JSON-serializable data to encrypt
+            encryption_key: Base64-encoded encryption key
+
+        Returns:
+            Base64-encoded encrypted string
+        """
+        fernet = Fernet(encryption_key)
+        data_json = json.dumps(data)
+        encrypted_data = fernet.encrypt(data_json.encode())
+        return encrypted_data.decode()
+
+    @staticmethod
+    def decrypt_data(encrypted_hash, encryption_key):
+        """
+        Decrypt encrypted data back to original format.
+
+        Args:
+            encrypted_hash: Base64-encoded encrypted string
+            encryption_key: Base64-encoded encryption key
+
+        Returns:
+            Decrypted data (dictionary or original data structure)
+        """
+        fernet = Fernet(encryption_key)
+        # Fernet.decrypt expects bytes (base64-encoded), so just encode the string
+        decrypted_json = fernet.decrypt(encrypted_hash.encode()).decode()
+        return json.loads(decrypted_json)
 
     @staticmethod
     def get_settings(xblock, data, suffix=""):
@@ -115,7 +179,8 @@ class CommonHandlers:
         if not key:
             return {"success": False, "error": "Missing key"}
         try:
-            is_deleted = delete_image(self.asset_storage, key)
+            storage = get_gamesxblock_storage()
+            is_deleted = delete_image(storage, key)
             return {"success": is_deleted, "key": key}
         except Exception as e:
             return {"success": False, "error": str(e)}
@@ -143,10 +208,11 @@ class CommonHandlers:
             new_game_type = data.get("game_type", GAME_TYPE.FLASHCARDS)
             new_is_shuffled = data.get("is_shuffled", DEFAULT.IS_SHUFFLED)
             new_cards = data.get("cards", [])
+            display_name = data.get("display_name", DEFAULT.DISPLAY_NAME)
 
             validated_cards = []
             for card in new_cards:
-                if not isinstance(card, Dict):
+                if not isinstance(card, dict):
                     return {"success": False, "error": _("Each card must be an object")}
 
                 # Validate required fields
@@ -171,6 +237,7 @@ class CommonHandlers:
                     }
                 )
 
+            xblock.display_name = display_name
             if new_game_type == GAME_TYPE.FLASHCARDS:
                 xblock.title = DEFAULT.FLASHCARDS_TITLE
             else:
@@ -191,16 +258,3 @@ class CommonHandlers:
             }
         except Exception as e:
             return {"success": False, "error": str(e)}
-
-    @staticmethod
-    def close_game(xblock, data, suffix=""):
-        """A handler to close the game to its title block."""
-        xblock.game_started = False
-        xblock.time_seconds = 0
-        xblock.match_count = 0
-        xblock.matches_remaining = xblock.list_length
-
-        if xblock.game_type == GAME_TYPE.FLASHCARDS:
-            xblock.term_is_visible = True
-            xblock.list_index = 0
-        return {"title": xblock.title}

@@ -3,7 +3,7 @@
 import pkg_resources
 from django.utils.translation import gettext_lazy as _
 from xblock.core import XBlock
-from xblock.fields import Boolean, Dict, Integer, List, Scope, String
+from xblock.fields import Boolean, Integer, List, Scope, String
 
 from .constants import DEFAULT
 from .handlers import CommonHandlers, FlashcardsHandlers, MatchingHandlers
@@ -49,85 +49,10 @@ class GamesXBlock(XBlock):
         help=_("A field for the length of the list for convenience."),
     )
 
-    # Flashcard game fields
-    term_is_visible = Boolean(
-        default=True,
-        scope=Scope.user_state,
-        help=_("Whether the term side of the flashcard is currently visible."),
-    )
-
-    list_index = Integer(
-        default=DEFAULT.LIST_INDEX,
-        scope=Scope.user_state,
-        help=_("Current flashcard index for user"),
-    )
-
-    matching_id_dictionary_index = Dict(
-        default={},
-        scope=Scope.user_state,
-        help=_(
-            "A dictionary to encrypt the ids of the terms and definitions for the matching game."
-        ),
-    )
-
-    matching_id_dictionary_type = Dict(
-        default={},
-        scope=Scope.user_state,
-        help=_(
-            "A dictionary to tie the id to the type of container (term or definition) for the matching game."
-        ),
-    )
-
-    matching_id_dictionary = Dict(
-        default={},
-        scope=Scope.user_state,
-        help=_(
-            "A dictionary to encrypt the ids of the terms and definitions for the matching game."
-        ),
-    )
-
-    matching_id_list = List(
-        default=[],
-        scope=Scope.user_state,
-        help=_("A list of random IDs for the matching game containers."),
-    )
-
-    game_started = Boolean(
-        default=False,
-        scope=Scope.user_state,
-        help=_("Whether the matching game has started (for timer tracking)."),
-    )
-
-    time_seconds = Integer(
-        default=0,
-        scope=Scope.user_state,
-        help=_("Timer in seconds for the matching game."),
-    )
-
     best_time = Integer(
         default=None,
         scope=Scope.user_state,
         help=_("Best time (in seconds) for completing the matching game."),
-    )
-
-    match_count = Integer(
-        default=DEFAULT.MATCH_COUNT,
-        scope=Scope.user_state,
-        help=_(
-            "Tracks how many matches have been successfully made. Used to determine when to switch pages."
-        ),
-    )
-
-    matches_remaining = Integer(
-        default=0, scope=Scope.user_state, help=_("The number of matches remaining.")
-    )
-
-    selected_containers = Dict(
-        default={},
-        scope=Scope.user_state,
-        help=_(
-            "A dictionary to keep track of selected containers for the matching game."
-        ),
     )
 
     is_shuffled = Boolean(
@@ -165,12 +90,6 @@ class GamesXBlock(XBlock):
 
         return frag
 
-    # Common handlers
-    @XBlock.json_handler
-    def expand_game(self, data, suffix=""):
-        """A handler to expand the game from its title block."""
-        return CommonHandlers.expand_game(self, data, suffix)
-
     @XBlock.json_handler
     def get_settings(self, data, suffix=""):
         """Get game type, cards, and shuffle setting in one call."""
@@ -190,7 +109,7 @@ class GamesXBlock(XBlock):
         Expected: { "key": "gamesxblock/<block_id>/<hash>.ext" }
         """
         # TODO: Delete API is not integrated yet, will handle this one after API is integrated if any change needed.
-        return CommonHandlers.delete_image(self, data, suffix)
+        return CommonHandlers.delete_image_handler(self, data, suffix)
 
     @XBlock.json_handler
     def save_settings(self, data, suffix=""):
@@ -198,36 +117,19 @@ class GamesXBlock(XBlock):
         return CommonHandlers.save_settings(self, data, suffix)
 
     @XBlock.json_handler
-    def close_game(self, data, suffix=""):
-        """A handler to close the game to its title block."""
-        return CommonHandlers.close_game(self, data, suffix)
-
-    # Flashcards handlers
-    @XBlock.json_handler
-    def start_game_flashcards(self, data, suffix=""):
-        """A handler to begin the flashcards game."""
-        return FlashcardsHandlers.start_game_flashcards(self, data, suffix)
-
-    # Matching handlers
-    @XBlock.json_handler
-    def start_game_matching(self, data, suffix=""):
-        """A handler to begin the matching game."""
-        return MatchingHandlers.start_game_matching(self, data, suffix)
+    def complete_matching_game(self, data, suffix=""):
+        """Complete the matching game and compare the user's time to the best_time field."""
+        return MatchingHandlers.complete_matching_game(self, data, suffix)
 
     @XBlock.json_handler
-    def update_timer(self, data, suffix=""):
-        """Update the timer. This is called every 1000ms by an ajax call."""
-        return MatchingHandlers.update_timer(self, data, suffix)
+    def start_matching_game(self, data, suffix=""):
+        """Decrypt and return the key mapping for matching game validation."""
+        return MatchingHandlers.get_matching_key_mapping(self, data, suffix)
 
-    @XBlock.json_handler
-    def select_container(self, data, suffix=""):
-        """A handler for selecting matching game containers and evaluating matches."""
-        return MatchingHandlers.select_container(self, data, suffix)
-
-    @XBlock.json_handler
-    def end_game_matching(self, data, suffix=""):
-        """End the matching game and compare the user's time to the best_time field."""
-        return MatchingHandlers.end_game_matching(self, data, suffix)
+    @XBlock.handler
+    def refresh_game(self, request, suffix=""):
+        """Refresh the game view with new shuffled data."""
+        return MatchingHandlers.refresh_game(self, request, suffix)
 
     @staticmethod
     def workbench_scenarios():

@@ -25,6 +25,9 @@ class FlashcardsHandlers:
         cards = list(xblock.cards) if xblock.cards else []
         list_length = len(cards)
 
+        if xblock.is_shuffled and cards:
+            random.shuffle(cards)
+
         # Build payload with salt for light obfuscation (pattern similar to matching)
         salt = "".join(random.choices(string.ascii_letters + string.digits, k=CONFIG.SALT_LENGTH))
         payload_cards = []
@@ -89,17 +92,3 @@ class FlashcardsHandlers:
         )
         frag.initialize_js("FlashcardsInit")
         return frag
-
-    @staticmethod
-    def start_game_flashcards(xblock, data, suffix=""):
-        """A handler to begin the flashcards game."""
-        cards = list(xblock.cards)
-
-        if xblock.is_shuffled:
-            random.shuffle(cards)
-
-        return {
-            "list": cards,
-            "list_index": xblock.list_index,
-            "list_length": xblock.list_length,
-        }

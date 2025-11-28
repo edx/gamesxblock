@@ -36,54 +36,7 @@ msgid "A field for the length of the list for convenience."
 msgstr ""
 
 #: games/games.py
-msgid "Whether the term side of the flashcard is currently visible."
-msgstr ""
-
-#: games/games.py
-msgid "Current flashcard index for user"
-msgstr ""
-
-#: games/games.py
-msgid ""
-"A dictionary to encrypt the ids of the terms and definitions for the "
-"matching game."
-msgstr ""
-
-#: games/games.py
-msgid ""
-"A dictionary to tie the id to the type of container (term or definition) for"
-" the matching game."
-msgstr ""
-
-#: games/games.py
-msgid "A list of random IDs for the matching game containers."
-msgstr ""
-
-#: games/games.py
-msgid "Whether the matching game has started (for timer tracking)."
-msgstr ""
-
-#: games/games.py
-msgid "Timer in seconds for the matching game."
-msgstr ""
-
-#: games/games.py
 msgid "Best time (in seconds) for completing the matching game."
-msgstr ""
-
-#: games/games.py
-msgid ""
-"Tracks how many matches have been successfully made. Used to determine when "
-"to switch pages."
-msgstr ""
-
-#: games/games.py
-msgid "The number of matches remaining."
-msgstr ""
-
-#: games/games.py
-msgid ""
-"A dictionary to keep track of selected containers for the matching game."
 msgstr ""
 
 #: games/games.py
@@ -94,11 +47,11 @@ msgstr ""
 msgid "ERR: self.game_type not defined or invalid"
 msgstr ""
 
-#: games/handlers/common.py
+#: games/handlers/common.py games/static/html/flashcards.html
 msgid "Click each card to reveal the definition"
 msgstr ""
 
-#: games/handlers/common.py
+#: games/handlers/common.py games/static/html/matching.html
 msgid "Match each term with the correct definition"
 msgstr ""
 
@@ -108,4 +61,48 @@ msgstr ""
 
 #: games/handlers/common.py
 msgid "Each card must have term and definition"
+msgstr ""
+
+#: games/static/html/flashcards.html games/static/html/matching.html
+msgid "Start"
+msgstr ""
+
+#: games/static/html/flashcards.html
+msgid "Previous card"
+msgstr ""
+
+#: games/static/html/flashcards.html
+msgid "Next card"
+msgstr ""
+
+#: games/static/html/flashcards.html games/static/html/matching.html
+msgid "Help"
+msgstr ""
+
+#: games/static/html/matching.html
+msgid "Congratulations!"
+msgstr ""
+
+#: games/static/html/matching.html
+msgid "A new personal best!"
+msgstr ""
+
+#: games/static/html/matching.html
+msgid "Previous best:"
+msgstr ""
+
+#: games/static/html/matching.html
+msgid "You completed the matching game in "
+msgstr ""
+
+#: games/static/html/matching.html
+msgid "Keep up the good work!"
+msgstr ""
+
+#: games/static/html/matching.html
+msgid "Your personal best"
+msgstr ""
+
+#: games/static/html/matching.html
+msgid "Play again"
 msgstr ""
