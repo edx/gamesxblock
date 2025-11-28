@@ -28,7 +28,7 @@ class DEFAULT:
 class CARD_FIELD:
     """Card field names."""
 
-    CARD_KEY = "card_key"
+    CARD_KEY = "id"
     TERM = "term"
     TERM_IMAGE = "term_image"
     DEFINITION = "definition"

@@ -67,15 +67,6 @@ class GamesXBlock(XBlock):
         help=_("Whether the game should have a timer"),
     )
 
-    """
-    #Following fields for editor only
-    timer = Boolean(
-        default=True,
-        scope=Scope.settings,
-        help="Whether to enable the timer for the matching game."
-    )
-    """
-
     def resource_string(self, path):
         """Handy helper for getting resources from our kit."""
         data = pkg_resources.resource_string(__name__, path)
@@ -156,37 +147,3 @@ class GamesXBlock(XBlock):
               """,
             ),
         ]
-
-    """
-    @XBlock.json_handler
-    def flip_timer(self, data, suffix=''):
-        self.timer = not(self.timer)
-        return {'timer': self.timer}
-
-    @XBlock.json_handler
-    def flip_shuffle(self, data, suffix=''):
-        self.shuffle = not(self.shuffle)
-        return {'shuffle': self.shuffle}
-    """
-
-    """
-    # The following is another way to approach the list field - currently not used but may be useful after dummy data is no longer used.
-        default=[
-            Dict(
-                default={'term': 'term1', 'definition': 'definition1'},
-                scope=Scope.content,
-                help="The first flashcard in the list."
-            ),
-            Dict(
-                default={'term': 'term2', 'definition': 'definition2'},
-                scope=Scope.content,
-                help="The second flashcard in the list."
-            ),
-            Dict(
-                default={'term': 'term3', 'definition': 'definition3'},
-                scope=Scope.content,
-                help="The third flashcard in the list."
-            )
-        ],
-        """
-    # )

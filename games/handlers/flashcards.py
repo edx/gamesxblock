@@ -34,6 +34,7 @@ class FlashcardsHandlers:
         for card in cards:
             payload_cards.append(
                 {
+                    "id": card.get(CARD_FIELD.CARD_KEY, ""),
                     "term": card.get(CARD_FIELD.TERM, ""),
                     "definition": card.get(CARD_FIELD.DEFINITION, ""),
                     "term_image": card.get(CARD_FIELD.TERM_IMAGE, ""),
