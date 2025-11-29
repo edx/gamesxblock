@@ -22,14 +22,13 @@ class DEFAULT:
     DISPLAY_NAME = "Games"
     GAME_TYPE = GAME_TYPE.MATCHING
     IS_SHUFFLED = False
-    MATCH_COUNT = 0
-    IS_TIMED = False
+    HAS_TIMER = False
 
 
 class CARD_FIELD:
     """Card field names."""
 
-    CARD_KEY = "card_key"
+    CARD_KEY = "id"
     TERM = "term"
     TERM_IMAGE = "term_image"
     DEFINITION = "definition"
@@ -53,7 +52,7 @@ class UPLOAD:
 class CONFIG:
     """Configuration values."""
 
-    RANDOM_STRING_LENGTH = 6
+    RANDOM_STRING_LENGTH = 8
     SALT_LENGTH = 12  # Length of random salt added to obfuscated payloads
     MATCHES_PER_PAGE = 5  # Number of matches displayed per page
     ENCRYPTION_SALT = "gamesxblock_secure_salt_v1"  # Salt for encryption key generation

@@ -21,7 +21,7 @@ def package_data(pkg, roots):
 
 setup(
     name="edx-games",
-    version="1.0.3",
+    version="1.0.4",
     description="Interactive games XBlock for Open edX - Create flashcards and matching games with image support",
     author="edX",
     author_email="edx@edx.org",
@@ -44,5 +44,5 @@ setup(
             "games = games:GamesXBlock",
         ]
     },
-    package_data=package_data("games", ["static", "public", "locale"]),
+    package_data=package_data("games", ["static", "locale"]),
 )
