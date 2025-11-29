@@ -3,7 +3,7 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
     const container = $('.gamesxblock-matching', element);
     const has_timer = $(container).data('timed') === true || $(container).data('timed') === 'true';
 
-    if (!container.length || !pages) return;
+    if (!container.length || !pages || pages.length === 0) return;
 
     // Prevent duplicate init that would attach multiple handlers
     if (container.data('gx_matching_initialized')) {

@@ -44,7 +44,7 @@ class MatchingHandlers:
 
         # Process each page with unique incremental indices per item (term + definition distinct)
         global_counter = 0
-        for page_idx, page_cards in enumerate(pages):
+        for _, page_cards in enumerate(pages):
             left_items = []
             right_items = []
 
@@ -77,14 +77,11 @@ class MatchingHandlers:
                 "right_items": right_items
             })
 
-        # Pages are already structured with global indices
-        formatted_pages = all_pages_data
-
         encryption_key = CommonHandlers.generate_encryption_key(xblock)
         encrypted_hash = CommonHandlers.encrypt_data(matched_entries, encryption_key)
 
         # Include all pages data in payload; encrypted "key" now holds list of pairs
-        mapping_payload = {"key": encrypted_hash, "pages": formatted_pages}
+        mapping_payload = {"key": encrypted_hash, "pages": all_pages_data}
         encoded_mapping = base64.b64encode(
             json.dumps(mapping_payload).encode()
         ).decode()
@@ -94,7 +91,7 @@ class MatchingHandlers:
         template_context = {
             "title": getattr(xblock, "title", DEFAULT.MATCHING_TITLE),
             "list_length": list_length,
-            "all_pages": formatted_pages,
+            "all_pages": all_pages_data,
             "has_timer": getattr(xblock, "has_timer", DEFAULT.HAS_TIMER),
             "total_pages": total_pages,
         }
