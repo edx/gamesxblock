@@ -43,16 +43,8 @@ msgstr ""
 msgid "Whether the cards should be shuffled"
 msgstr ""
 
-#: games/handlers/common.py
-msgid "ERR: self.game_type not defined or invalid"
-msgstr ""
-
-#: games/handlers/common.py games/static/html/flashcards.html
-msgid "Click each card to reveal the definition"
-msgstr ""
-
-#: games/handlers/common.py games/static/html/matching.html
-msgid "Match each term with the correct definition"
+#: games/games.py
+msgid "Whether the game should have a timer"
 msgstr ""
 
 #: games/handlers/common.py
@@ -61,6 +53,10 @@ msgstr ""
 
 #: games/handlers/common.py
 msgid "Each card must have term and definition"
+msgstr ""
+
+#: games/static/html/flashcards.html
+msgid "Click each card to reveal the definition"
 msgstr ""
 
 #: games/static/html/flashcards.html games/static/html/matching.html
@@ -77,6 +73,10 @@ msgstr ""
 
 #: games/static/html/flashcards.html games/static/html/matching.html
 msgid "Help"
+msgstr ""
+
+#: games/static/html/matching.html
+msgid "Match each term with the correct definition"
 msgstr ""
 
 #: games/static/html/matching.html
@@ -101,6 +101,10 @@ msgstr ""
 
 #: games/static/html/matching.html
 msgid "Your personal best"
+msgstr ""
+
+#: games/static/html/matching.html
+msgid "You successfully matched all items."
 msgstr ""
 
 #: games/static/html/matching.html

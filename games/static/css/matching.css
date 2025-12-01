@@ -76,14 +76,14 @@
     margin-bottom: 32px;
 }
 
-.matching-new-best, .matching-prev-best {
+.matching-new-best, .matching-prev-best, .matching-non-timer {
     text-align: center;
     display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
-.matching-new-best.active, .matching-prev-best.active {
+.matching-new-best.active, .matching-prev-best.active, .matching-non-timer.active {
     display: flex;
 }
 
@@ -122,13 +122,14 @@
     display: block;
 }
 
-.matching-prev-best-subtitle {
+.matching-prev-best-subtitle, .matching-non-timer-subtitle {
     color: var(--primary-500, #00262B);
     text-align: center;
     font-size: 22px;
     font-style: normal;
     font-weight: 500;
     margin-bottom: 32px;
+    line-height: 28px;
 }
 .matching-prev-best-subtitle span {
     color: var(--primary-500, #00262B);

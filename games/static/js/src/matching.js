@@ -271,6 +271,19 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
     }
 
     function completeGame() {
+        if (!has_timer) {
+            $('.matching-end-screen', element).addClass('active');
+            $('.matching-non-timer', element).addClass('active');
+            $('.matching-new-best', element).remove();
+            $('.matching-prev-best', element).remove();
+            $('.matching-grid', element).remove();
+            $('.matching-footer', element).remove();
+            if (typeof GamesConfetti !== 'undefined') {
+                GamesConfetti.trigger($('.confetti-container', element), 20);
+            }
+            return;
+        }
+
         $.ajax({
             type: 'POST',
             url: runtime.handlerUrl(element, 'complete_matching_game'),
