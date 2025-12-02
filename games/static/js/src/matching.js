@@ -170,9 +170,9 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
     }
 
     function updateProgress() {
-        const completedPages = currentPageIndex;
-        $('#matching-progress-count').text(completedPages);
-        const progress = totalPages > 0 ? (completedPages / totalPages) : 0;
+        const currentPageNumber = currentPageIndex + 1;
+        $('#matching-progress-count').text(currentPageNumber);
+        const progress = totalPages > 0 ? (currentPageNumber / totalPages) : 0;
         const circumference = baseCircumference || computeCircumference();
         const offset = circumference * (1 - progress);
         $('.matching-progress-bar', element).css('stroke-dashoffset', offset);
