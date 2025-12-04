@@ -9,3 +9,12 @@ __pycache__
 dist/
 build/
 .DS_Store
+
+# Test and coverage files
+coverage.xml
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+*.cover
+.hypothesis/
