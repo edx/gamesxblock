@@ -14,6 +14,7 @@ from web_fragments.fragment import Fragment
 from ..constants import CARD_FIELD, CONFIG, DEFAULT
 from .common import CommonHandlers
 
+
 class FlashcardsHandlers:
     """Handlers specific to the flashcards game."""
 

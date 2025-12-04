@@ -5,16 +5,10 @@ Following Open edX testing standards with pytest and ddt.
 """
 
 import json
-import os
-import sys
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, patch
 import pytest
-from ddt import ddt, data, unpack
 from xblock.field_data import DictFieldData
 from xblock.test.tools import TestRuntime
-
-# Add the project root to the Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from games.games import GamesXBlock
 from games.constants import DEFAULT, GAME_TYPE
@@ -114,7 +108,6 @@ class TestGamesXBlock:
             assert isinstance(scenario[1], str)  # XML
 
 
-@ddt
 @pytest.mark.django_db
 class TestGamesXBlockHandlers:
     """Test XBlock handler methods."""

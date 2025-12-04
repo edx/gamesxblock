@@ -5,7 +5,7 @@ Following Open edX testing standards with pytest and ddt.
 """
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from django.core.exceptions import ImproperlyConfigured
 from django.core.files.storage import default_storage
 

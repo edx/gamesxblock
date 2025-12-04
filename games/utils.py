@@ -44,6 +44,7 @@ def get_gamesxblock_storage():
 
 
 def delete_image(storage, key: str):
+    """Delete an image from storage if it exists."""
     if storage.exists(key):
         storage.delete(key)
         return True
