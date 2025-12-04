@@ -27,14 +27,14 @@ install-test-requirements: ## Install test requirements
 
 test: ## Run unit tests
 	@echo "Running unit tests..."
-	pytest games/tests/ -v
+	pytest tests/ -v
 
 test-coverage: ## Run tests with coverage report
 	@echo "Running tests with coverage..."
-	pytest games/tests/ -v --cov=games --cov-report=term-missing --cov-report=html --cov-report=xml
+	pytest tests/ -v --cov=games --cov-report=term-missing --cov-report=html --cov-report=xml
 
 quality: ## Run code quality checks
 	@echo "Running pylint..."
-	DJANGO_SETTINGS_MODULE=games.tests.settings pylint games --load-plugins=pylint_django --exit-zero
+	DJANGO_SETTINGS_MODULE=tests.settings pylint games --load-plugins=pylint_django --exit-zero
 	@echo "Running pycodestyle..."
 	pycodestyle games --exclude=migrations,tests --max-line-length=120 || true
