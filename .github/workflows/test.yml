@@ -44,7 +44,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest games/tests/ -v --cov=games --cov-report=term-missing --cov-report=xml --cov-report=html
+          pytest games/tests/ -v --cov=games --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=80
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
