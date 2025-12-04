@@ -4,7 +4,7 @@ Tests for games toggles.
 from unittest.mock import patch, MagicMock
 from django.test import TestCase
 
-from ..toggles import is_games_xblock_enabled, ENABLE_GAMES_XBLOCK
+from games.toggles import is_games_xblock_enabled, ENABLE_GAMES_XBLOCK
 
 
 class TestGamesXBlockToggles(TestCase):
