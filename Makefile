@@ -23,7 +23,7 @@ compile_translations: ## Compile .po files to .mo files
 
 install-test-requirements: ## Install test requirements
 	@echo "Installing test requirements..."
-	pip install -r test-requirements.txt
+	pip install -r requirements/test.txt
 
 test: ## Run unit tests
 	@echo "Running unit tests..."
