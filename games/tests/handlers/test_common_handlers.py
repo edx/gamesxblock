@@ -33,6 +33,7 @@ class TestCommonHandlers(TestCase):
         })
         self.xblock = GamesXBlock(self.runtime, self.field_data, self.scope_ids)
 
+    # Tests for generate_unique_var_names
     def test_generate_unique_var_names(self):
         """Test generating unique variable names for obfuscation."""
         keys = [self.fake.word(), self.fake.word(), self.fake.word()]
@@ -52,6 +53,7 @@ class TestCommonHandlers(TestCase):
             self.assertLessEqual(len(name), 6)
             self.assertTrue(name.islower())
 
+    # Tests for generate_encryption_key
     def test_generate_encryption_key(self):
         """Test encryption key generation."""
         key = CommonHandlers.generate_encryption_key(self.xblock)
@@ -59,6 +61,7 @@ class TestCommonHandlers(TestCase):
         self.assertIsInstance(key, bytes)
         self.assertEqual(len(key), 44)  # Base64-encoded 32-byte key
 
+    # Tests for encrypt_data and decrypt_data
     def test_encrypt_decrypt_data(self):
         """Test encrypting and decrypting data."""
         key = CommonHandlers.generate_encryption_key(self.xblock)
@@ -71,6 +74,7 @@ class TestCommonHandlers(TestCase):
         decrypted = CommonHandlers.decrypt_data(encrypted, key)
         self.assertEqual(decrypted, original_data)
 
+    # Tests for get_settings
     def test_get_settings(self):
         """Test getting game settings."""
         self.xblock.game_type = GAME_TYPE.MATCHING
@@ -88,6 +92,7 @@ class TestCommonHandlers(TestCase):
         self.assertEqual(result['is_shuffled'], is_shuffled)
         self.assertEqual(result['has_timer'], has_timer)
 
+    # Tests for upload_image
     @patch('games.handlers.common.get_gamesxblock_storage')
     def test_upload_image_success(self, mock_get_storage):
         """Test successful image upload."""
@@ -151,6 +156,7 @@ class TestCommonHandlers(TestCase):
         self.assertFalse(response_data['success'])
         self.assertIn('Unsupported file type', response_data['error'])
 
+    # Tests for save_settings
     def test_save_settings_flashcards(self):
         """Test saving settings for flashcards game."""
         display_name = self.fake.catch_phrase()
@@ -219,6 +225,7 @@ class TestCommonHandlers(TestCase):
         self.assertFalse(result['success'])
         self.assertIn('object', result['error'])
 
+    # Tests for format_as_uuid_like
     def test_format_as_uuid_like(self):
         """Test UUID-like formatting for obfuscation."""
         key_hex = self.fake.hexify(text='^^^^^^^^', upper=False)
@@ -238,6 +245,7 @@ class TestCommonHandlers(TestCase):
         # First part should be the key
         self.assertEqual(parts[0], key_hex)
 
+    # Tests for delete_image_handler
     @patch('games.handlers.common.get_gamesxblock_storage')
     @patch('games.handlers.common.delete_image')
     def test_delete_image_handler_success(self, mock_delete, mock_get_storage):

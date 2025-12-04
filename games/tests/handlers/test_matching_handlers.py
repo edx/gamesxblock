@@ -37,6 +37,7 @@ class TestMatchingHandlers(TestCase):
         })
         self.xblock = GamesXBlock(self.runtime, self.field_data, self.scope_ids)
 
+    # Tests for student_view rendering
     @patch('games.handlers.matching.pkg_resources.resource_string')
     def test_student_view_renders_fragment(self, mock_resource_string):
         """Test student view returns a fragment."""
@@ -72,6 +73,7 @@ class TestMatchingHandlers(TestCase):
 
         self.assertIsNotNone(frag)
 
+    # Tests for get_matching_key_mapping
     def test_get_matching_key_mapping_success(self):
         """Test getting matching key mapping with valid encrypted data."""
         from games.handlers.common import CommonHandlers
@@ -102,6 +104,7 @@ class TestMatchingHandlers(TestCase):
         self.assertFalse(result['success'])
         self.assertIn('Failed to decrypt', result['error'])
 
+    # Tests for refresh_game
     @patch.object(MatchingHandlers, 'student_view')
     def test_refresh_game(self, mock_student_view):
         """Test refresh game handler."""
@@ -117,6 +120,7 @@ class TestMatchingHandlers(TestCase):
         self.assertIn(refresh_content, response.body.decode())
         mock_student_view.assert_called_once()
 
+    # Tests for complete_matching_game
     def test_complete_matching_game_first_time(self):
         """Test completing matching game for the first time."""
         new_time = self.fake.pyfloat(min_value=10.0, max_value=100.0, right_digits=2)

@@ -34,6 +34,7 @@ class TestFlashcardsHandlers(TestCase):
         })
         self.xblock = GamesXBlock(self.runtime, self.field_data, self.scope_ids)
 
+    # Tests for student_view rendering
     @patch('games.handlers.flashcards.pkg_resources.resource_string')
     def test_student_view_renders_fragment(self, mock_resource_string):
         """Test student view returns a fragment with cards."""
@@ -45,17 +46,6 @@ class TestFlashcardsHandlers(TestCase):
         self.assertIn(self.title, frag.content)
 
     @patch('games.handlers.flashcards.pkg_resources.resource_string')
-    def test_student_view_with_shuffled_cards(self, mock_resource_string):
-        """Test student view with shuffled cards."""
-        mock_resource_string.return_value = b'<div>{{ list_length }}</div>'
-        self.xblock.is_shuffled = True
-
-        frag = FlashcardsHandlers.student_view(self.xblock)
-
-        self.assertIsNotNone(frag)
-        self.assertIn('2', frag.content)
-
-    @patch('games.handlers.flashcards.pkg_resources.resource_string')
     def test_student_view_with_no_cards(self, mock_resource_string):
         """Test student view with no cards."""
         mock_resource_string.return_value = b'<div>{{ list_length }}</div>'
@@ -65,3 +55,14 @@ class TestFlashcardsHandlers(TestCase):
 
         self.assertIsNotNone(frag)
         self.assertIn('0', frag.content)
+
+    @patch('games.handlers.flashcards.pkg_resources.resource_string')
+    def test_student_view_with_shuffled_cards(self, mock_resource_string):
+        """Test student view with shuffled cards."""
+        mock_resource_string.return_value = b'<div>{{ list_length }}</div>'
+        self.xblock.is_shuffled = True
+
+        frag = FlashcardsHandlers.student_view(self.xblock)
+
+        self.assertIsNotNone(frag)
+        self.assertIn('2', frag.content)
