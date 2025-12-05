@@ -1,0 +1,11 @@
+# CI/CD specific requirements for Games XBlock
+# Used in GitHub Actions and other CI environments
+
+-r test.txt
+
+# Coverage reporting
+coverage==7.4.0
+codecov==2.1.13
+
+# CI-specific tools
+tox-battery==0.6.2

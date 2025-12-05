@@ -4,13 +4,13 @@
 # The language of the source strings (the code)
 source_locale: en
 
-# Locales for which we want to generate dummy translations (for testing)
-dummy_locales:
-  - eo  # Esperanto used as dummy locale
+# Supported locales
+locales:
+  - en  # English
+  - es_419  # Spanish (Latin America)
 
 # Directories to search for translatable strings
-locales:
-  - games/locale
+locales_dir: games/locale
 
 # Python source paths
 source_messages_dir: games

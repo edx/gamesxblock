@@ -22,11 +22,11 @@ def is_games_xblock_enabled():
     """
     Return Waffle flag for enabling the games xblock on legacy studio.
     """
-    try: 
+    try:
         # adding this try/catch cause
         # goCD deployment is getting MySQL connection failure during make pull_translations django command,
         # caused by Django trying to evaluate a waffle flag (legacy_studio.enable_games_xblock) at import time
         # when CMS is not up
         return ENABLE_GAMES_XBLOCK.is_enabled()
     except Exception:
-        return False 
+        return False

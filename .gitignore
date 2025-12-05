@@ -1,7 +1,7 @@
 __pycache__
 
 *.lcov
-
+.venv/
 *.pyc
 
 # Build and distribution files
@@ -9,3 +9,12 @@ __pycache__
 dist/
 build/
 .DS_Store
+
+# Test and coverage files
+coverage.xml
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+*.cover
+.hypothesis/

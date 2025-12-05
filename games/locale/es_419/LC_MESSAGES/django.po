@@ -1,0 +1,114 @@
+# edX translation file.
+# Copyright (C) 2025 EdX
+# This file is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE.
+# EdX Team <info@edx.org>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.1a\n"
+"Report-Msgid-Bugs-To: openedx-translation@googlegroups.com\n"
+"POT-Creation-Date: 2023-06-13 08:00+0000\n"
+"PO-Revision-Date: 2023-06-13 09:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: openedx-translation <openedx-translation@googlegroups.com>\n"
+"Language: es_419\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: games/games.py
+msgid "The title of the block to be displayed in the xblock."
+msgstr "El título del bloque que se mostrará en el xblock."
+
+#: games/games.py
+msgid ""
+"The kind of game this xblock is responsible for ('flashcards' or 'matching' "
+"for now)."
+msgstr ""
+"El tipo de juego del que este xblock es responsable ('flashcards' o "
+"'matching' por ahora)."
+
+#: games/games.py
+msgid "The list of terms and definitions."
+msgstr "La lista de términos y definiciones."
+
+#: games/games.py
+msgid "A field for the length of the list for convenience."
+msgstr "Un campo para la longitud de la lista por conveniencia."
+
+#: games/games.py
+msgid "Best time (in seconds) for completing the matching game."
+msgstr "Mejor tiempo (en segundos) para completar el juego de emparejamiento."
+
+#: games/games.py
+msgid "Whether the cards should be shuffled"
+msgstr "Si las tarjetas deben mezclarse"
+
+#: games/games.py
+msgid "Whether the game should have a timer"
+msgstr "Si el juego debe tener un temporizador"
+
+#: games/handlers/common.py
+msgid "Each card must be an object"
+msgstr "Cada tarjeta debe ser un objeto"
+
+#: games/handlers/common.py
+msgid "Each card must have term and definition"
+msgstr "Cada tarjeta debe tener término y definición"
+
+#: games/static/html/flashcards.html
+msgid "Click each card to reveal the definition"
+msgstr "Haz clic en cada tarjeta para revelar la definición"
+
+#: games/static/html/flashcards.html games/static/html/matching.html
+msgid "Start"
+msgstr "Comenzar"
+
+#: games/static/html/flashcards.html
+msgid "Previous card"
+msgstr "Tarjeta anterior"
+
+#: games/static/html/flashcards.html
+msgid "Next card"
+msgstr "Siguiente tarjeta"
+
+#: games/static/html/flashcards.html games/static/html/matching.html
+msgid "Help"
+msgstr "Ayuda"
+
+#: games/static/html/matching.html
+msgid "Match each term with the correct definition"
+msgstr "Empareja cada término con la definición correcta"
+
+#: games/static/html/matching.html
+msgid "Congratulations!"
+msgstr "¡Felicitaciones!"
+
+#: games/static/html/matching.html
+msgid "A new personal best!"
+msgstr "¡Un nuevo récord personal!"
+
+#: games/static/html/matching.html
+msgid "Previous best:"
+msgstr "Mejor anterior:"
+
+#: games/static/html/matching.html
+msgid "You completed the matching game in "
+msgstr "Completaste el juego de emparejamiento en "
+
+#: games/static/html/matching.html
+msgid "Keep up the good work!"
+msgstr "¡Sigue con el buen trabajo!"
+
+#: games/static/html/matching.html
+msgid "Your personal best"
+msgstr "Tu mejor récord personal"
+
+#: games/static/html/matching.html
+msgid "You successfully matched all items."
+msgstr "Emparejaste exitosamente todos los elementos."
+
+#: games/static/html/matching.html
+msgid "Play again"
+msgstr "Jugar de nuevo"

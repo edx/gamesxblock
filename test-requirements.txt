@@ -1,0 +1,23 @@
+# Testing requirements for Open edX Games XBlock
+# Following Open edX standard testing packages
+
+# Core testing frameworks
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-django==4.7.0
+
+# Mocking and data-driven tests
+mock==5.1.0
+ddt==1.7.1
+
+# XBlock testing
+XBlock>=5.0.0
+
+# Code quality
+pylint==3.0.3
+pylint-django==2.5.5
+pycodestyle==2.11.1
+
+# Additional utilities
+factory-boy==3.3.0
+faker==22.0.0

@@ -1,7 +1,7 @@
 # Locales to support
 LOCALES := en ar es_419 fr zh_CN
 
-.PHONY: help extract_translations compile_translations
+.PHONY: help extract_translations compile_translations test test-coverage quality install-test-requirements
 
 help: ## Display this help message
 	@echo "Please use \`make <target>' where <target> is one of:"
@@ -21,4 +21,20 @@ compile_translations: ## Compile .po files to .mo files
 	@find games/locale -type f \( -name "*-partial.po" -o -name "*-partial.mo" \) -delete
 	@echo "Compilation complete. Check games/locale/*/LC_MESSAGES/*.mo files"
 
+install-test-requirements: ## Install test requirements
+	@echo "Installing test requirements..."
+	pip install -r requirements/test.txt
 
+test: ## Run unit tests
+	@echo "Running unit tests..."
+	pytest tests/ -v
+
+test-coverage: ## Run tests with coverage report
+	@echo "Running tests with coverage..."
+	pytest tests/ -v --cov=games --cov-report=term-missing --cov-report=html --cov-report=xml
+
+quality: ## Run code quality checks
+	@echo "Running pylint..."
+	DJANGO_SETTINGS_MODULE=tests.settings pylint games --load-plugins=pylint_django --exit-zero
+	@echo "Running pycodestyle..."
+	pycodestyle games --exclude=migrations,tests --max-line-length=120 || true
