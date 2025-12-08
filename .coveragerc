@@ -10,8 +10,8 @@ omit =
     */test_*.py
     */__pycache__/*
     */locale/*
-    games/tests/settings.py
-    games/tests/urls.py
+    tests/settings.py
+    tests/urls.py
 
 [report]
 # Regexes for lines to exclude from consideration

@@ -164,9 +164,9 @@ These APIs work across both flashcards and matching game types.
 ```json
 {
   "success": true,
-  "url": "https://s3.amazonaws.com/bucket/gamesxblock/block_id/abc123def456.png",
+  "url": "https://s3.amazonaws.com/bucket/games/block_id/abc123def456.png",
   "filename": "my-image.png",
-  "file_path": "gamesxblock/block_id/abc123def456.png"
+  "file_path": "games/block_id/abc123def456.png"
 }
 ```
 
