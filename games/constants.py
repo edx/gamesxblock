@@ -21,8 +21,8 @@ class DEFAULT:
     FLASHCARDS_TITLE = "Flashcards"
     DISPLAY_NAME = "Games"
     GAME_TYPE = GAME_TYPE.MATCHING
-    IS_SHUFFLED = False
-    HAS_TIMER = False
+    IS_SHUFFLED = True
+    HAS_TIMER = True
 
 
 class CARD_FIELD:
