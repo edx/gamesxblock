@@ -55,9 +55,14 @@ class FlashcardsHandlers:
             random.choices(string.ascii_lowercase + string.digits, k=16)
         )
 
-        # Obfuscated decoder named function FlashcardsInit
+        # Generate unique function name per XBlock to avoid conflicts
+        init_function_name = "FlashcardsInit_" + "".join(
+            random.choices(string.ascii_lowercase + string.digits, k=8)
+        )
+
+        # Obfuscated decoder with unique function name
         obf_decoder = (
-            f"function FlashcardsInit({var_names['runtime']},{var_names['elem']}){{"  # function header
+            f"function {init_function_name}({var_names['runtime']},{var_names['elem']}){{"  # function header
             f"var {var_names['tag']}=$('#{data_element_id}',{var_names['elem']});"  # locate script tag
             f"if(!{var_names['tag']}.length)return;try{{"  # guard
             f"var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));"  # decode
@@ -92,5 +97,5 @@ class FlashcardsHandlers:
                 __name__, "../static/js/src/flashcards.js"
             ).decode("utf8")
         )
-        frag.initialize_js("FlashcardsInit")
+        frag.initialize_js(init_function_name)
         return frag
