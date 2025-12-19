@@ -18,6 +18,7 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
 
     let timerInterval = null;
     let timeSeconds = 0;
+    let isPreviewMode = false;
 
     function formatTime(seconds) {
         const hours = Math.floor(seconds / 3600);
@@ -132,8 +133,34 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
                 }
             },
             error: function(xhr, status, error) {
+                if (xhr.status === 404) {
+                    isPreviewMode = true;
+                    indexLink = {};
+                    let idx = 0;
+                    allPages.forEach(page => {
+                        page.left_items.forEach(() => {
+                            const termIdx = idx++;
+                            const defIdx = idx++;
+                            indexLink[termIdx] = defIdx;
+                            indexLink[defIdx] = termIdx;
+                        });
+                    });
+                    if (allPages && allPages[currentPageIndex]) {
+                        currentPagePairs = allPages[currentPageIndex].left_items.length;
+                    }
+
+                    $('.matching-start-screen', element).remove();
+                    $('.matching-grid', element).addClass('active');
+                    $('.matching-footer', element).addClass('active');
+
+                    if (has_timer) {
+                        startTimer();
+                    }
+                    spinner.removeClass('active');
+                    return;
+                }
                 alert('Failed to start game. Please try again.');
-                spinner.hide();
+                spinner.removeClass('active');
                 startButton.prop('disabled', false);
             }
         });
@@ -278,6 +305,22 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
             $('.matching-prev-best', element).remove();
             $('.matching-grid', element).remove();
             $('.matching-footer', element).remove();
+            if (typeof GamesConfetti !== 'undefined') {
+                GamesConfetti.trigger($('.confetti-container', element), 20);
+            }
+            return;
+        }
+
+        // In preview mode, skip server call and show completion directly
+        if (isPreviewMode) {
+            $('.matching-end-screen', element).addClass('active');
+            $('.matching-grid', element).remove();
+            $('.matching-footer', element).remove();
+            $('.matching-new-best', element).addClass('active');
+            $('.matching-prev-best', element).remove();
+            $('#matching-current-result', element).text(formatTime(timeSeconds));
+            $('.matching-new-prev-best', element).remove();
+
             if (typeof GamesConfetti !== 'undefined') {
                 GamesConfetti.trigger($('.confetti-container', element), 20);
             }

@@ -20,7 +20,7 @@ class DEFAULT:
     MATCHING_TITLE = "Matching"
     FLASHCARDS_TITLE = "Flashcards"
     DISPLAY_NAME = "Games"
-    GAME_TYPE = GAME_TYPE.MATCHING
+    GAME_TYPE = GAME_TYPE.FLASHCARDS
     IS_SHUFFLED = True
     HAS_TIMER = True
 

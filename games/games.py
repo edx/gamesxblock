@@ -72,6 +72,12 @@ class GamesXBlock(XBlock):
         data = pkg_resources.resource_string(__name__, path)
         return data.decode("utf8")
 
+    def get_mode(self):
+        """Detect if in preview/author mode."""
+        if hasattr(self.runtime, 'is_author_mode') and self.runtime.is_author_mode:
+            return "preview"
+        return "normal"
+
     def student_view(self, context=None):
         """
         The primary view of the GamesXBlock, shown to students
@@ -105,7 +111,6 @@ class GamesXBlock(XBlock):
         Delete an image by storage key.
         Expected: { "key": "gamesxblock/<block_id>/<hash>.ext" }
         """
-        # TODO: Delete API is not integrated yet, will handle this one after API is integrated if any change needed.
         return CommonHandlers.delete_image_handler(self, data, suffix)
 
     @XBlock.json_handler
