@@ -168,6 +168,10 @@
     transition: background 0.2s ease;
 }
 
+.matching-end-button:hover:not(:disabled) {
+    background: var(--primary-500, #001A1D);
+}
+
 .matching-start-button:hover:not(:disabled) {
     background: var(--primary-600, #001A1D);
 }
