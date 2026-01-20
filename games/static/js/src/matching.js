@@ -48,7 +48,6 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
     }
 
     function refreshGame() {
-        MatchInit = null;
         $.ajax({
             type: 'GET',
             url: runtime.handlerUrl(element, 'refresh_game'),
@@ -61,9 +60,22 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
                     var scriptContent = decoderScript.text();
                     decoderScript.remove();
                     try {
-                        eval(scriptContent);
-                        if (typeof MatchingInit === 'function') {
-                            MatchingInit(runtime, element);
+                        var match = scriptContent.match(/function\s+(\w+)\s*\(/);
+                        if (match) {
+                            var initFuncName = match[1];
+                            eval(scriptContent);
+                            if (typeof window[initFuncName] === 'function') {
+                                window[initFuncName](runtime, element);
+                                setTimeout(function() {
+                                    $('.matching-start-button', element).click();
+                                }, 100);
+                            } else {
+                                console.error('Init function not found:', initFuncName);
+                                window.location.reload();
+                            }
+                        } else {
+                            console.error('Could not extract function name');
+                            window.location.reload();
                         }
                     } catch (err) {
                         console.error('Failed to initialize game:', err);
