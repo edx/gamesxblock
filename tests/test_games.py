@@ -55,7 +55,7 @@ class TestGamesXBlock:
                 user_id='test-user-id',
             )
         )
-        assert default_block.title == DEFAULT.MATCHING_TITLE
+        assert default_block.title == DEFAULT.FLASHCARDS_TITLE
         assert default_block.display_name == DEFAULT.DISPLAY_NAME
         assert default_block.game_type == DEFAULT.GAME_TYPE
         assert default_block.cards == []
