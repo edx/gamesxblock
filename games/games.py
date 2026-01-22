@@ -20,7 +20,7 @@ class GamesXBlock(XBlock):
     """
 
     title = String(
-        default=DEFAULT.MATCHING_TITLE,
+        default=DEFAULT.FLASHCARDS_TITLE,
         scope=Scope.content,
         help=_("The title of the block to be displayed in the xblock."),
     )

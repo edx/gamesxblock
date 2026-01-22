@@ -29,7 +29,7 @@
 .flashcards-title {
     color: var(--primary-500, #00262B);
     font-size: 24px;
-    font-weight: 600;
+    font-weight: 700;
     line-height: 32px;
     margin: 0;
 }
@@ -52,7 +52,10 @@
 
 .flashcards-start-title {
     color: var(--primary-500, #00262B);
+    text-align: center;
+    font-family: Inter;
     font-size: 20px;
+    font-style: normal;
     font-weight: 500;
     line-height: 28px;
 }
