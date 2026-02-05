@@ -62,14 +62,18 @@ class FlashcardsHandlers:
 
         # Obfuscated decoder with unique function name
         obf_decoder = (
-            f"function {init_function_name}({var_names['runtime']},{var_names['elem']}){{"  # function header
-            f"var {var_names['tag']}=$('#{data_element_id}',{var_names['elem']});"  # locate script tag
-            f"if(!{var_names['tag']}.length)return;try{{"  # guard
-            f"var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));"  # decode
-            f"{var_names['tag']}.remove();"  # remove script
-            f"if({var_names['payload']}&&{var_names['payload']}.cards)"  # validate
-            f"GamesXBlockFlashcardsInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.cards);"  # init
-            f"}}catch({var_names['err']}){{console.warn('Decode failed');}}}}"
+            f"function {init_function_name}({var_names['runtime']},{var_names['elem']}){{"
+            f"try{{"
+            f"var {var_names['tag']}=$('#{data_element_id}',{var_names['elem']});"
+            f"if(!{var_names['tag']}.length){{console.error('Flashcards: Data element not found');return;}}"
+            f"var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));"
+            f"{var_names['tag']}.remove();"
+            f"if({var_names['payload']}&&{var_names['payload']}.cards){{"
+            f"if(typeof GamesXBlockFlashcardsInit==='function'){{"
+            f"GamesXBlockFlashcardsInit({var_names['runtime']},{var_names['elem']},{var_names['payload']}.cards);"
+            f"}}else{{console.error('Flashcards: GamesXBlockFlashcardsInit not defined');}}"
+            f"}}else{{console.error('Flashcards: Invalid payload');}}"
+            f"}}catch({var_names['err']}){{console.error('Flashcards decode failed:',{var_names['err']});}}}}"
         )
 
         template_context = {
@@ -97,5 +101,6 @@ class FlashcardsHandlers:
                 __name__, "../static/js/src/flashcards.js"
             ).decode("utf8")
         )
+        frag.add_javascript(obf_decoder)
         frag.initialize_js(init_function_name)
         return frag
