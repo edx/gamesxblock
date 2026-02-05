@@ -124,13 +124,18 @@ class MatchingHandlers:
         # Build obfuscated decoder function; initializes JS via payload
         obf_decoder = (
             f"function {init_function_name}({var_names['runtime']},{var_names['elem']}){{"
+            f"try{{"
             f"var {var_names['tag']}=$('#{data_element_id}',{var_names['elem']});"
-            f"if(!{var_names['tag']}.length)return;try{{"
+            f"if(!{var_names['tag']}.length){{console.error('Matching: Data element not found');return;}}"
             f"var {var_names['payload']}=JSON.parse(atob({var_names['tag']}.text()));"
-            f"{var_names['tag']}.remove();if({var_names['payload']}&&{var_names['payload']}.pages)"
+            f"{var_names['tag']}.remove();"
+            f"if({var_names['payload']}&&{var_names['payload']}.pages){{"
+            f"if(typeof GamesXBlockMatchingInit==='function'){{"
             f"GamesXBlockMatchingInit({runtime},{elem},{payload}.pages,{payload}.key);"
+            f"}}else{{console.error('Matching: GamesXBlockMatchingInit not defined');}}"
+            f"}}else{{console.error('Matching: Invalid payload');}}"
             f"$('#obf_decoder_script',{var_names['elem']}).remove();"
-            f"}}catch({var_names['err']}){{console.warn('Decode failed');}}}}"
+            f"}}catch({var_names['err']}){{console.error('Matching decode failed:',{var_names['err']});}}}}"
         )
 
         template_context["encoded_mapping"] = encoded_mapping
@@ -165,6 +170,8 @@ class MatchingHandlers:
                 __name__, "../static/js/src/confetti.js"
             ).decode("utf8")
         )
+        # Add decoder function AFTER main JS files so GamesXBlockMatchingInit is defined
+        frag.add_javascript(obf_decoder)
         frag.initialize_js(init_function_name)
         return frag
 

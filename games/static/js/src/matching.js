@@ -63,7 +63,7 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
                         var match = scriptContent.match(/function\s+(\w+)\s*\(/);
                         if (match) {
                             var initFuncName = match[1];
-                            eval(scriptContent);
+                            (1, eval)(scriptContent);
                             if (typeof window[initFuncName] === 'function') {
                                 window[initFuncName](runtime, element);
                                 setTimeout(function() {
