@@ -38,14 +38,16 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
 
         // Handle term image
         if (card.term_image && card.term_image.trim() !== '') {
-            $termImage.attr('src', card.term_image).attr('alt', card.term).show();
+            var termAlt = card.term_image_alt || card.term || '';
+            $termImage.attr('src', card.term_image).attr('alt', termAlt).show();
         } else {
             $termImage.hide();
         }
 
         // Handle definition image
         if (card.definition_image && card.definition_image.trim() !== '') {
-            $definitionImage.attr('src', card.definition_image).attr('alt', card.definition).show();
+            var defAlt = card.definition_image_alt || card.definition || '';
+            $definitionImage.attr('src', card.definition_image).attr('alt', defAlt).show();
         } else {
             $definitionImage.hide();
         }

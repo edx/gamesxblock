@@ -33,6 +33,14 @@ class FlashcardsHandlers:
         salt = "".join(random.choices(string.ascii_letters + string.digits, k=CONFIG.SALT_LENGTH))
         payload_cards = []
         for card in cards:
+            term_image_alt = card.get(CARD_FIELD.TERM_IMAGE_ALT, "").strip()
+            if not term_image_alt:
+                term_image_alt = card.get(CARD_FIELD.TERM, "")
+
+            definition_image_alt = card.get(CARD_FIELD.DEFINITION_IMAGE_ALT, "").strip()
+            if not definition_image_alt:
+                definition_image_alt = card.get(CARD_FIELD.DEFINITION, "")
+
             payload_cards.append(
                 {
                     "id": card.get(CARD_FIELD.CARD_KEY, ""),
@@ -40,6 +48,8 @@ class FlashcardsHandlers:
                     "definition": card.get(CARD_FIELD.DEFINITION, ""),
                     "term_image": card.get(CARD_FIELD.TERM_IMAGE, ""),
                     "definition_image": card.get(CARD_FIELD.DEFINITION_IMAGE, ""),
+                    "term_image_alt": term_image_alt,
+                    "definition_image_alt": definition_image_alt,
                 }
             )
         mapping_payload = {"cards": payload_cards, "salt": salt}
