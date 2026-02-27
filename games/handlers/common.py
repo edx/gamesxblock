@@ -217,6 +217,8 @@ class CommonHandlers:
                         CARD_FIELD.CARD_KEY: card.get(
                             CARD_FIELD.CARD_KEY, str(uuid.uuid4())
                         ),
+                        CARD_FIELD.TERM_IMAGE_ALT: card.get(CARD_FIELD.TERM_IMAGE_ALT, ""),
+                        CARD_FIELD.DEFINITION_IMAGE_ALT: card.get(CARD_FIELD.DEFINITION_IMAGE_ALT, ""),
                     }
                 )
 
