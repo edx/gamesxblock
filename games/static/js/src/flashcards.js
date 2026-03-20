@@ -22,6 +22,7 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
     var $progress = $element.find('#flashcard-progress');
     var $prevBtn = $element.find('#flashcard-prev');
     var $nextBtn = $element.find('#flashcard-next');
+    var $inner = $element.find('.flashcard-inner');
 
     // Render current card
     function renderCard() {
@@ -59,9 +60,12 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
         $prevBtn.prop('disabled', currentIndex === 0);
         $nextBtn.prop('disabled', currentIndex === totalCards - 1);
 
-        // Reset flip state
-        if ($card.hasClass(flipClassName)) {
+        // Reset flip state instantly (no animation)
+        if ($card.hasClass(flipClassName) && $inner.length) {
+            $inner.addClass('no-transition');
             $card.removeClass(flipClassName);
+            void $inner[0].offsetHeight;
+            $inner.removeClass('no-transition');
         }
     }
 

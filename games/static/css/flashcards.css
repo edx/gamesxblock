@@ -112,6 +112,10 @@
     cursor: pointer;
 }
 
+.flashcard-inner.no-transition {
+    transition: none;
+}
+
 .flashcard-block.flashcard-flipped .flashcard-inner {
     transform: rotateY(180deg);
 }
