@@ -35,7 +35,7 @@
 }
 
 .matching-start-title {
-    color: var(--primary-500, #00262B);
+    color: #111827;
     text-align: center;
     font-family: Inter;
     font-size: 20px;
@@ -68,7 +68,7 @@
     margin: 0;      /* normalize margins to rely on flex gap */
 }
 .matching-end-title {
-    color: var(--primary-500, #00262B);
+    color: #111827;
     text-align: center;
     font-size: 32px;
     font-style: normal;
@@ -88,7 +88,7 @@
 }
 
 .matching-new-end-title {
-    color: var(--primary-500, #00262B);
+    color: #111827;
     text-align: center;
     font-variant-numeric: lining-nums proportional-nums;
     font-size: 88px;
@@ -99,7 +99,7 @@
 }
 
 .matching-new-end-subtitle {
-    color: var(--primary-500, #00262B);
+    color: #111827;
     text-align: center;
     font-size: 28px;
     font-style: normal;
@@ -108,7 +108,7 @@
 }
 
 .matching-new-prev-best {
-    color: var(--primary-500, #00262B);
+    color: #111827;
     font-size: 18px;
     font-style: normal;
     font-weight: 600;
@@ -123,7 +123,7 @@
 }
 
 .matching-prev-best-subtitle, .matching-non-timer-subtitle {
-    color: var(--primary-500, #00262B);
+    color: #111827;
     text-align: center;
     font-size: 22px;
     font-style: normal;
@@ -132,7 +132,7 @@
     line-height: 28px;
 }
 .matching-prev-best-subtitle span {
-    color: var(--primary-500, #00262B);
+    color: #111827;
     font-size: 22px;
     font-style: normal;
     font-weight: 700;
@@ -146,7 +146,7 @@
     gap: 10px;
     border-radius: 8px;
     background: rgba(251, 245, 208);
-    color: var(--extras-black, #000);
+    color: #111827;
     text-align: center;
     font-size: 22px;
     font-style: normal;
@@ -159,8 +159,8 @@
     justify-content: center;
     gap: 8px;
     align-items: center;
-    background: var(--primary-500, #00262B);
-    color: var(--white, #FFFFFF);
+    background: #1D4ED8;
+    color: #fff;
     font-size: 18px;
     font-weight: 500;
     border: none;
@@ -169,11 +169,11 @@
 }
 
 .matching-end-button:hover:not(:disabled) {
-    background: var(--primary-600, #001A1D);
+    background: #2563EB;
 }
 
 .matching-start-button:hover:not(:disabled) {
-    background: var(--primary-600, #001A1D);
+    background: #2563EB;
 }
 
 .matching-start-button:disabled {
@@ -211,7 +211,7 @@
 }
 
 .matching-title {
-    color: var(--primary-500, #00262B);
+    color: #111827;
     font-size: 22px;
     font-weight: 700;
     margin: 0;
@@ -226,7 +226,7 @@
 }
 
 .matching-timer {
-    color: var(--primary-500, #00262B);
+    color: #111827;
     font-size: 28px;
     font-weight: 500;
     letter-spacing: -1.96px;
@@ -267,7 +267,7 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    color: var(--Primary-500, #00262B);
+    color: #111827;
     text-align: center;
     font-variant-numeric: lining-nums tabular-nums;
     font-family: Inter;
@@ -287,7 +287,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--primary-500, #00262B);
+    color: #111827;
     cursor: pointer;
     transition: color 0.2s ease;
 }
@@ -324,34 +324,34 @@
     padding: 16px;
     overflow: auto;
     border-radius: 8px;
-    border: 2px solid var(--light-300, #F2F0EF);
-    background: var(--white, #FFFFFF);
+    border: 2px solid #374151;
+    background: #F9FAFB;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: center;
 }
 
 .matching-box:hover {
-    border-color: var(--light-500, #E1DDDB);
-    background: var(--light-100, #FAFAFA);
+    border-color: #1D4ED8;
+    background: #E0E7EF;
 }
 
 .matching-box.selected {
-    border-color: var(--primary-500, #00262B);
-    background: var(--light-200, #F8F8F8);
+    border-color: #1D4ED8;
+    background: #DBEAFE;
 }
 
 .matching-box.matched {
-    border-color: var(--success-500, #0D7D4D);
-    background: var(--success-100, #F2FAF7);
+    border-color: #059669;
+    background: #D1FAE5;
     opacity: 0.6;
     pointer-events: none;
 }
 
 .matching-box.incorrect {
     animation: shake 0.4s ease;
-    border-color: var(--danger-700, #AB0D02);
-    background: var(--danger-100, #FCF1F4);
+    border-color: #DC2626;
+    background: #FEE2E2;
 }
 
 @keyframes shake {
