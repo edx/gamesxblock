@@ -23,6 +23,24 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
     var $prevBtn = $element.find('#flashcard-prev');
     var $nextBtn = $element.find('#flashcard-next');
     var $inner = $element.find('.flashcard-inner');
+    var $liveRegion = $element.find('#flashcard-sr-announcements');
+
+    function announce(message) {
+        var el = $liveRegion[0];
+        el.textContent = '';
+        // Force reflow so the screen reader registers the cleared state
+        void el.offsetHeight;
+        el.textContent = message;
+    }
+
+    function getCardAriaLabel() {
+        var card = cards[currentIndex];
+        var isFlipped = $card.hasClass(flipClassName);
+        if (isFlipped) {
+            return 'Flashcard ' + (currentIndex + 1) + ' of ' + totalCards + '. Definition: ' + (card.definition || '') + '. Press Enter or Space to flip.';
+        }
+        return 'Flashcard ' + (currentIndex + 1) + ' of ' + totalCards + '. Term: ' + (card.term || '') + '. Press Enter or Space to flip.';
+    }
 
     // Render current card
     function renderCard() {
@@ -67,15 +85,34 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
             void $inner[0].offsetHeight;
             $inner.removeClass('no-transition');
         }
+        $element.find('.flashcard-front').attr('aria-hidden', 'false');
+        $element.find('.flashcard-back').attr('aria-hidden', 'true');
+        $card.attr('aria-label', getCardAriaLabel());
+        announce('Card ' + (currentIndex + 1) + ' of ' + totalCards + '. Term: ' + (card.term || ''));
     }
 
     // Flip card
     function flipCard() {
-        if ($card.hasClass(flipClassName)) {
+        var isFlipped = $card.hasClass(flipClassName);
+        if (isFlipped) {
             $card.removeClass(flipClassName);
+            $element.find('.flashcard-front').attr('aria-hidden', 'false');
+            $element.find('.flashcard-back').attr('aria-hidden', 'true');
         } else {
             $card.addClass(flipClassName);
+            $element.find('.flashcard-front').attr('aria-hidden', 'true');
+            $element.find('.flashcard-back').attr('aria-hidden', 'false');
         }
+        var card = cards[currentIndex];
+        if ($card.hasClass(flipClassName)) {
+            announce('Definition: ' + (card.definition || ''));
+        } else {
+            announce('Term: ' + (card.term || ''));
+        }
+        // Update aria-label after announce so it doesn't compete
+        setTimeout(function() {
+            $card.attr('aria-label', getCardAriaLabel());
+        }, 1000);
     }
 
     // Navigation
@@ -99,6 +136,7 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
         $cardWrapper.addClass('active');
         $footer.addClass('active');
         renderCard();
+        $card.focus();
     }
 
     // Event handlers
@@ -138,11 +176,20 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
                 break;
             case ' ':
             case 'Enter':
-                e.preventDefault();
-                flipCard();
+                // Only flip when the card itself is focused, not buttons
+                if ($(e.target).is($card) || $card.find(e.target).length) {
+                    e.preventDefault();
+                    flipCard();
+                }
                 break;
         }
     });
+
+    // Focus the start button on load and announce the game
+    setTimeout(function() {
+        $startButton.focus();
+        announce('Flashcard game. Press Start to begin.');
+    }, 300);
 
     // Cleanup on unload
     $(element).on('remove', function() {

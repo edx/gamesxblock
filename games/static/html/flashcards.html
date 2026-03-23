@@ -5,7 +5,8 @@
 <script type="application/json" id="{{data_element_id}}">{{encoded_mapping|safe}}</script>
 <script type="text/template" id="flashcards_decoder_script">{{obf_decoder|safe}}</script>
 
-<div class="gamesxblock gamesxblock-flashcards">
+<div class="gamesxblock gamesxblock-flashcards" role="region" aria-label="{% trans 'Flashcard game' %}">
+    <div class="sr-only" aria-live="assertive" aria-atomic="true" role="alert" id="flashcard-sr-announcements"></div>
     <!-- Header -->
     <div class="flashcards-header">
         <h1 class="flashcards-title">{{title}}</h1>
@@ -18,15 +19,15 @@
 
     <!-- Main Card Area -->
     <div class="flashcards-card-wrapper">
-        <div class="flashcard-block" id="flashcard-card" draggable="false" tabindex="0" role="button" aria-pressed="false">
+        <div class="flashcard-block" id="flashcard-card" draggable="false" tabindex="0" aria-roledescription="flashcard" aria-label="">
             <div class="flashcard-inner">
-                <div class="flashcard-face flashcard-front">
+                <div class="flashcard-face flashcard-front" aria-hidden="false">
                     <div class="flashcard-front-content">
                         <img id="flashcard-term-image" class="image" alt="Flashcard term" />
                         <div class="flashcard-text" id="flashcard-term">&nbsp;</div>
                     </div>
                 </div>
-                <div class="flashcard-face flashcard-back">
+                <div class="flashcard-face flashcard-back" aria-hidden="true">
                     <div class="flashcard-back-content">
                         <img id="flashcard-definition-image" class="image" alt="Flashcard definition" />
                         <div class="flashcard-text" id="flashcard-definition">&nbsp;</div>

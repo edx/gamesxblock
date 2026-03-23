@@ -421,3 +421,25 @@
     opacity: 1;
     visibility: visible;
 }
+
+.gamesxblock-matching .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.matching-box:focus-visible {
+    outline: 2px solid var(--primary-500, #00262B);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(0, 38, 43, 0.2);
+}
+
+.matching-end-screen-content:focus {
+    outline: none;
+}
