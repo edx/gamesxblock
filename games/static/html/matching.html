@@ -5,6 +5,7 @@
 <script type="text/template" id="obf_decoder_script">{{obf_decoder|safe}}</script>
 
 <div class='gamesxblock gamesxblock-matching' data-timed="{{ has_timer|yesno:'true,false' }}">
+    <div class="sr-only" aria-live="assertive" aria-atomic="true" role="alert" id="matching-sr-announcements"></div>
     <div class="matching-header">
         <h1 class="matching-title">{{title}}</h1>
     </div>
@@ -12,7 +13,7 @@
     <div class="matching-start-screen">
         <h1 class="matching-start-title">{% trans "Match each term with the correct definition" %}</h1>
         <button class="matching-start-button" {% if list_length <= 0 %}disabled{% endif %}>{% trans "Start" %}</button>
-        <div class="matching-loading-spinner">
+        <div class="matching-loading-spinner" aria-hidden="true">
             <div class="spinner"></div>
         </div>
     </div>
@@ -23,7 +24,8 @@
             {% if all_pages %}
                 {% for item in all_pages.0.left_items %}
                 <div class="matching-box-wrapper">
-                    <div class="matching-box" data-index="matching-key-{{item.index}}" title="{{item.text}}">
+                    <div class="matching-box" data-index="matching-key-{{item.index}}" data-item-type="term"
+                         title="{{item.text}}" role="button" tabindex="0">
                         <span class="matching-box-text">{{item.text}}</span>
                     </div>
                 </div>
@@ -36,7 +38,8 @@
             {% if all_pages %}
                 {% for item in all_pages.0.right_items %}
                 <div class="matching-box-wrapper">
-                    <div class="matching-box" data-index="matching-key-{{item.index}}" title="{{item.text}}">
+                    <div class="matching-box" data-index="matching-key-{{item.index}}" data-item-type="definition"
+                         title="{{item.text}}" role="button" tabindex="0">
                         <span class="matching-box-text">{{item.text}}</span>
                     </div>
                 </div>
@@ -48,7 +51,7 @@
     <div class="matching-footer">
         <div class="matching-progress-wrapper">
             {% if total_pages > 1 %}
-            <svg class="matching-progress-circle" xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55" fill="none">
+            <svg class="matching-progress-circle" xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55" fill="none" aria-hidden="true">
                 <circle class="matching-progress-bg" cx="27.0213" cy="27.0213" r="25.0213" stroke-width="4" />
                 <circle class="matching-progress-bar" cx="27.0213" cy="27.0213" r="25.0213" stroke-width="4" />
             </svg>
@@ -75,7 +78,7 @@
 
     <div class="matching-end-screen">
         <div class="confetti-container"></div>
-        <div class="matching-end-screen-content">
+        <div class="matching-end-screen-content" tabindex="-1" role="region" aria-label="{% trans 'Game results' %}">
             <h1 class="matching-end-title">{% trans "Congratulations!" %}</h1>
             <div class="matching-new-best">
                 <h1 class="matching-new-end-title" id="matching-current-result">0:00</h1>

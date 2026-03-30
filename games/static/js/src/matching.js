@@ -5,6 +5,16 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
 
     if (!container.length || !pages || pages.length === 0) return;
 
+    var $liveRegion = $(element).find('#matching-sr-announcements');
+
+    function announce(message) {
+        var el = $liveRegion[0];
+        el.textContent = '';
+        // Force reflow so the screen reader registers the cleared state
+        void el.offsetHeight;
+        el.textContent = message;
+    }
+
     // Prevent duplicate init that would attach multiple handlers
     if (container.data('gx_matching_initialized')) {
         return;
@@ -138,6 +148,9 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
                     if (has_timer) {
                         startTimer();
                     }
+                    setTimeout(function() {
+                        $('.matching-box', element).first().focus();
+                    }, 100);
                 } else {
                     alert('Error loading game: ' + (response.error || 'Unknown error'));
                     spinner.removeClass('active');
@@ -168,6 +181,9 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
                     if (has_timer) {
                         startTimer();
                     }
+                    setTimeout(function() {
+                        $('.matching-box', element).first().focus();
+                    }, 100);
                     spinner.removeClass('active');
                     return;
                 }
@@ -220,11 +236,13 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
 
     function clearSelectionVisual(box) {
         box.removeClass('selected incorrect');
+        box.attr('aria-pressed', 'false');
     }
 
     function markIncorrect(a, b) {
         a.addClass('incorrect');
         b.addClass('incorrect');
+        announce('Incorrect match. Try again.');
         setTimeout(() => {
             clearSelectionVisual(a);
             clearSelectionVisual(b);
@@ -256,7 +274,10 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
             const wrapper = $('<div class="matching-box-wrapper"></div>');
             const box = $('<div class="matching-box"></div>')
                 .attr('data-index', `matching-key-${item.index}`)
-                .attr('title', item.text);
+                .attr('data-item-type', 'term')
+                .attr('title', item.text)
+                .attr('role', 'button')
+                .attr('tabindex', '0');
             const text = $('<span class="matching-box-text"></span>').text(item.text);
             box.append(text);
             wrapper.append(box);
@@ -268,7 +289,10 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
             const wrapper = $('<div class="matching-box-wrapper"></div>');
             const box = $('<div class="matching-box"></div>')
                 .attr('data-index', `matching-key-${item.index}`)
-                .attr('title', item.text);
+                .attr('data-item-type', 'definition')
+                .attr('title', item.text)
+                .attr('role', 'button')
+                .attr('tabindex', '0');
             const text = $('<span class="matching-box-text"></span>').text(item.text);
             box.append(text);
             wrapper.append(box);
@@ -277,27 +301,54 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
 
         // Re-attach click handlers to new boxes
         attachBoxClickHandlers();
+        $('.matching-box', element).first().focus();
+        announce('Page ' + (currentPageIndex + 1) + ' of ' + totalPages);
     }
 
     function markMatch(a, b) {
         a.addClass('matched').removeClass('selected');
         b.addClass('matched').removeClass('selected');
+        announce('Correct match!');
         matchCount += 1;
+
+        // Delay aria state changes so VoiceOver finishes reading "Correct match!" first
+        setTimeout(function() {
+            a.attr('aria-disabled', 'true').attr('aria-pressed', 'false');
+            b.attr('aria-disabled', 'true').attr('aria-pressed', 'false');
+        }, 1500);
 
         // Check if current page is complete
         if (matchCount >= currentPagePairs) {
             // Check if there are more pages
             if (currentPageIndex + 1 < totalPages) {
-                loadNextPage();
+                // Delay so "Correct match!" is heard before "Page X of Y"
+                setTimeout(function() {
+                    loadNextPage();
+                }, 1500);
             } else {
                 // All pages complete - end game
                 if (has_timer) {
                     stopTimer();
                 }
+                // Delay so "Correct match!" is heard before "Congratulations"
                 setTimeout(() => {
                     completeGame();
-                }, 800);
+                }, 1500);
             }
+            return;
+        }
+
+        // Determine next focus target before boxes are removed from the DOM.
+        // Look for the nearest unmatched box after the last clicked box (b),
+        // then before it in the same column, then any remaining unmatched box.
+        var $nextFocus = b.parent().nextAll('.matching-box-wrapper')
+            .find('.matching-box:not(.matched)').first();
+        if (!$nextFocus.length) {
+            $nextFocus = b.parent().prevAll('.matching-box-wrapper')
+                .find('.matching-box:not(.matched)').first();
+        }
+        if (!$nextFocus.length) {
+            $nextFocus = $('.matching-box:not(.matched)', element).first();
         }
 
         setTimeout(() => {
@@ -306,6 +357,11 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
                     $(this).remove();
                 });
             });
+            setTimeout(function() {
+                if ($nextFocus.length) {
+                    $nextFocus.focus();
+                }
+            }, 650);
         }, 1500);
     }
 
@@ -320,6 +376,8 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
             if (typeof GamesConfetti !== 'undefined') {
                 GamesConfetti.trigger($('.confetti-container', element), 20);
             }
+            announce('Congratulations! You matched all items.');
+            $('.matching-end-screen-content', element).focus();
             return;
         }
 
@@ -336,6 +394,8 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
             if (typeof GamesConfetti !== 'undefined') {
                 GamesConfetti.trigger($('.confetti-container', element), 20);
             }
+            announce('Congratulations! You matched all items.');
+            $('.matching-end-screen-content', element).focus();
             return;
         }
 
@@ -373,6 +433,8 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
                 if (typeof GamesConfetti !== 'undefined') {
                     GamesConfetti.trigger($('.confetti-container', element), 20);
                 }
+                announce('Congratulations! You matched all items.');
+                $('.matching-end-screen-content', element).focus();
             },
             error: function(xhr, status, error) {
                 console.error('Failed to submit score:', error);
@@ -396,6 +458,7 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
         }
 
         box.addClass('selected');
+        box.attr('aria-pressed', 'true');
         if (!firstSelection) {
             firstSelection = [box, idx];
             return;
@@ -421,9 +484,19 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
     }
 
     function attachBoxClickHandlers() {
-        $('.matching-box', element).off('click').on('click', handleBoxClick);
+        $('.matching-box', element).off('click keydown')
+            .on('click', handleBoxClick)
+            .on('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleBoxClick.call(this);
+                }
+            });
     }
 
     attachBoxClickHandlers();
+
+    // Set initial focus on the start button so keyboard users land on the game
+    $('.matching-start-button', element).focus();
 }
 
