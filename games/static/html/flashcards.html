@@ -8,16 +8,17 @@
 <div class="gamesxblock gamesxblock-flashcards" role="region" aria-label="{% trans 'Flashcard game' %}">
     <div class="sr-only" aria-live="assertive" aria-atomic="true" role="alert" id="flashcard-sr-announcements"></div>
     <!-- Header -->
-    <div class="flashcards-header">
+    <header class="flashcards-header">
         <h1 class="flashcards-title">{{title}}</h1>
-    </div>
+    </header>
 
     <div class="flashcards-start-screen">
-        <h1 class="flashcards-start-title">{% trans "Click each card to reveal the definition" %}</h1>
+        <h3 class="flashcards-start-title">{% trans "Click each card to reveal the definition" %}</h3>
         <button class="flashcards-start-button" {% if list_length <= 0 %}disabled{% endif %}>{% trans "Start" %}</button>
     </div>
 
     <!-- Main Card Area -->
+    <main id="main-content" tabindex="-1">
     <div class="flashcards-card-wrapper">
         <div class="flashcard-block" id="flashcard-card" draggable="false" tabindex="0" aria-roledescription="flashcard" aria-label="">
             <div class="flashcard-inner">
@@ -36,6 +37,7 @@
             </div>
         </div>
     </div>
+    </main>
 
     <!-- Footer Navigation -->
     <div class="flashcard-footer">
