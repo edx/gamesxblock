@@ -1,8 +1,7 @@
 {% load i18n %}
 <link href='https://fonts.googleapis.com/css?family=Inter' rel='stylesheet'>
 
-<script type="application/json" id="{{data_element_id}}">{{encoded_mapping|safe}}</script>
-<script type="text/template" id="obf_decoder_script">{{obf_decoder|safe}}</script>
+{{ pages_json|json_script:"matching-pages-data" }}
 
 <div class='gamesxblock gamesxblock-matching' data-timed="{{ has_timer|yesno:'true,false' }}">
     <div class="sr-only" aria-live="assertive" aria-atomic="true" role="alert" id="matching-sr-announcements"></div>
@@ -18,14 +17,14 @@
         </div>
     </div>
 
-    <main id="main-content-{{data_element_id}}" tabindex="-1">
+    <main id="main-content-{{block_id}}" tabindex="-1">
     <div class="matching-grid">
         <!-- Left Column (mixed when shuffled) -->
         <div class="matching-column matching-column-left">
             {% if all_pages %}
                 {% for item in all_pages.0.left_items %}
                 <div class="matching-box-wrapper">
-                    <div class="matching-box" data-index="matching-key-{{item.index}}" data-item-type="term"
+                    <div class="matching-box" data-item-type="term" data-match="{{item.match}}"
                          title="{{item.text}}" role="button" tabindex="0">
                         <span class="matching-box-text">{{item.text}}</span>
                     </div>
@@ -39,7 +38,7 @@
             {% if all_pages %}
                 {% for item in all_pages.0.right_items %}
                 <div class="matching-box-wrapper">
-                    <div class="matching-box" data-index="matching-key-{{item.index}}" data-item-type="definition"
+                    <div class="matching-box" data-item-type="definition" data-hash="{{item.hash}}"
                          title="{{item.text}}" role="button" tabindex="0">
                         <span class="matching-box-text">{{item.text}}</span>
                     </div>

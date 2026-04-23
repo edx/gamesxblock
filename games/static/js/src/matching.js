@@ -1,5 +1,9 @@
 /* Matching game isolated script */
-function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
+function GamesXBlockMatchingInit(runtime, element) {
+    const pagesEl = $(element).find('#matching-pages-data');
+    const pages = JSON.parse(pagesEl.text());
+    pagesEl.remove();
+
     const container = $('.gamesxblock-matching', element);
     const has_timer = $(container).data('timed') === true || $(container).data('timed') === 'true';
 
@@ -21,14 +25,12 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
     }
     container.data('gx_matching_initialized', true);
 
-    let indexLink = null; // maps self_index -> partner_index
     let allPages = pages;
     let currentPageIndex = 0;
     let totalPages = pages.length;
 
     let timerInterval = null;
     let timeSeconds = 0;
-    let isPreviewMode = false;
 
     function formatTime(seconds) {
         const hours = Math.floor(seconds / 3600);
@@ -64,36 +66,10 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
             dataType: 'html',
             success: function(html) {
                 $(element).html(html);
-                var decoderScript = $(element).find('#obf_decoder_script');
-
-                if (decoderScript.length) {
-                    var scriptContent = decoderScript.text();
-                    decoderScript.remove();
-                    try {
-                        var match = scriptContent.match(/function\s+(\w+)\s*\(/);
-                        if (match) {
-                            var initFuncName = match[1];
-                            (1, eval)(scriptContent);
-                            if (typeof window[initFuncName] === 'function') {
-                                window[initFuncName](runtime, element);
-                                setTimeout(function() {
-                                    $('.matching-start-button', element).click();
-                                }, 100);
-                            } else {
-                                console.error('Init function not found:', initFuncName);
-                                window.location.reload();
-                            }
-                        } else {
-                            console.error('Could not extract function name');
-                            window.location.reload();
-                        }
-                    } catch (err) {
-                        console.error('Failed to initialize game:', err);
-                        window.location.reload();
-                    }
-                } else {
-                    window.location.reload();
-                }
+                GamesXBlockMatchingInit(runtime, element);
+                setTimeout(function() {
+                    $('.matching-start-button', element).click();
+                }, 100);
             },
             error: function(xhr, status, error) {
                 console.error('Failed to refresh game:', error);
@@ -103,95 +79,20 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
     }
 
     $('.matching-start-button', element).off('click').on('click', function() {
-        if (!matching_key) {
-            alert('Error: Game not initialized properly');
-            return;
+        if (allPages && allPages[currentPageIndex]) {
+            currentPagePairs = allPages[currentPageIndex].left_items.length;
         }
 
-        const spinner = $('.matching-loading-spinner', element);
-        const startButton = $('.matching-start-button', element);
+        $('.matching-start-screen', element).remove();
+        $('.matching-grid', element).addClass('active');
+        $('.matching-footer', element).addClass('active');
 
-        spinner.addClass('active');
-        startButton.prop('disabled', true);
-
-        $.ajax({
-            type: 'POST',
-            url: runtime.handlerUrl(element, 'start_matching_game'),
-            data: JSON.stringify({ matching_key }),
-            contentType: 'application/json',
-            dataType: 'json',
-            success: function(response) {
-                if (response.success && response.data) {
-                    const entries = response.data;
-                    indexLink = {};
-                    if (Array.isArray(entries)) {
-                        entries.forEach((entry, selfIdx) => {
-                            if (entry && typeof entry === 'string') {
-                                const parts = entry.split('-');
-                                if (parts.length === 5) {
-                                    const indexHex = parts[1] + parts[3];
-                                    indexLink[selfIdx] = parseInt(indexHex, 16);
-                                }
-                            }
-                        });
-                    }
-
-                    // Set current page pair count
-                    if (allPages && allPages[currentPageIndex]) {
-                        currentPagePairs = allPages[currentPageIndex].left_items.length;
-                    }
-
-                    $('.matching-start-screen', element).remove();
-                    $('.matching-grid', element).addClass('active');
-                    $('.matching-footer', element).addClass('active');
-
-                    if (has_timer) {
-                        startTimer();
-                    }
-                    setTimeout(function() {
-                        $('.matching-box', element).first().focus();
-                    }, 100);
-                } else {
-                    alert('Error loading game: ' + (response.error || 'Unknown error'));
-                    spinner.removeClass('active');
-                    startButton.prop('disabled', false);
-                }
-            },
-            error: function(xhr, status, error) {
-                if (xhr.status === 404) {
-                    isPreviewMode = true;
-                    indexLink = {};
-                    let idx = 0;
-                    allPages.forEach(page => {
-                        page.left_items.forEach(() => {
-                            const termIdx = idx++;
-                            const defIdx = idx++;
-                            indexLink[termIdx] = defIdx;
-                            indexLink[defIdx] = termIdx;
-                        });
-                    });
-                    if (allPages && allPages[currentPageIndex]) {
-                        currentPagePairs = allPages[currentPageIndex].left_items.length;
-                    }
-
-                    $('.matching-start-screen', element).remove();
-                    $('.matching-grid', element).addClass('active');
-                    $('.matching-footer', element).addClass('active');
-
-                    if (has_timer) {
-                        startTimer();
-                    }
-                    setTimeout(function() {
-                        $('.matching-box', element).first().focus();
-                    }, 100);
-                    spinner.removeClass('active');
-                    return;
-                }
-                alert('Failed to start game. Please try again.');
-                spinner.removeClass('active');
-                startButton.prop('disabled', false);
-            }
-        });
+        if (has_timer) {
+            startTimer();
+        }
+        setTimeout(function() {
+            $('.matching-box', element).first().focus();
+        }, 100);
     });
 
     $('.matching-end-button', element).off('click').on('click', function() {
@@ -199,7 +100,6 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
     });
 
     let firstSelection = null;
-    const matched = new Set();
     let matchCount = 0;
     let currentPagePairs = 0;
 
@@ -256,7 +156,6 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
 
         // Reset match count for new page
         matchCount = 0;
-        matched.clear();
         firstSelection = null;
 
         // Get next page data
@@ -273,8 +172,8 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
         nextPage.left_items.forEach(item => {
             const wrapper = $('<div class="matching-box-wrapper"></div>');
             const box = $('<div class="matching-box"></div>')
-                .attr('data-index', `matching-key-${item.index}`)
                 .attr('data-item-type', 'term')
+                .attr('data-match', item.match)
                 .attr('title', item.text)
                 .attr('role', 'button')
                 .attr('tabindex', '0');
@@ -288,8 +187,8 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
         nextPage.right_items.forEach(item => {
             const wrapper = $('<div class="matching-box-wrapper"></div>');
             const box = $('<div class="matching-box"></div>')
-                .attr('data-index', `matching-key-${item.index}`)
                 .attr('data-item-type', 'definition')
+                .attr('data-hash', item.hash)
                 .attr('title', item.text)
                 .attr('role', 'button')
                 .attr('tabindex', '0');
@@ -381,24 +280,6 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
             return;
         }
 
-        // In preview mode, skip server call and show completion directly
-        if (isPreviewMode) {
-            $('.matching-end-screen', element).addClass('active');
-            $('.matching-grid', element).remove();
-            $('.matching-footer', element).remove();
-            $('.matching-new-best', element).addClass('active');
-            $('.matching-prev-best', element).remove();
-            $('#matching-current-result', element).text(formatTime(timeSeconds));
-            $('.matching-new-prev-best', element).remove();
-
-            if (typeof GamesConfetti !== 'undefined') {
-                GamesConfetti.trigger($('.confetti-container', element), 20);
-            }
-            announce('Congratulations! You matched all items.');
-            $('.matching-end-screen-content', element).focus();
-            return;
-        }
-
         $.ajax({
             type: 'POST',
             url: runtime.handlerUrl(element, 'complete_matching_game'),
@@ -444,12 +325,8 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
 
     function handleBoxClick() {
         const box = $(this);
-        if (!indexLink) return;
-        const idxStr = box.data('index');
-        if (!idxStr) return;
-        const idx = parseInt(idxStr.replace('matching-key-', ''), 10);
-        if (Number.isNaN(idx)) return;
-        if (matched.has(idx)) return;
+        if (box.hasClass('matched')) return;
+        const type = box.data('itemType');
 
         if (firstSelection && firstSelection[0].is(box)) {
             clearSelectionVisual(box);
@@ -457,29 +334,45 @@ function GamesXBlockMatchingInit(runtime, element, pages, matching_key) {
             return;
         }
 
+        if (firstSelection && firstSelection[1] === type) {
+            clearSelectionVisual(firstSelection[0]);
+            firstSelection = null;
+        }
+
         box.addClass('selected');
         box.attr('aria-pressed', 'true');
         if (!firstSelection) {
-            firstSelection = [box, idx];
+            firstSelection = [box, type];
             return;
         }
 
-        const [prevBox, prevIdx] = firstSelection;
+        const [prevBox, prevType] = firstSelection;
         firstSelection = null;
-        if (prevIdx === idx) {
-            clearSelectionVisual(prevBox);
-            clearSelectionVisual(box);
-            return;
-        }
+        const termBox = prevType === 'term' ? prevBox : box;
+        const defBox  = prevType === 'term' ? box : prevBox;
+        const defHash      = String(defBox.data('hash')).trim();
+        const expectedHash = String(termBox.data('match')).trim();
 
-        const partnerOfPrev = indexLink[prevIdx];
-        const partnerOfCurr = indexLink[idx];
-        if (partnerOfPrev === idx && partnerOfCurr === prevIdx) {
-            markMatch(prevBox, box);
-            matched.add(prevIdx);
-            matched.add(idx);
+        if (expectedHash === defHash) {
+            markMatch(termBox, defBox);
         } else {
-            markIncorrect(prevBox, box);
+            const termText = termBox.find('.matching-box-text').text().trim();
+            let resolvedTerm = null;
+            $('.matching-box[data-item-type="term"]', element).not('.matched').each(function() {
+                const $t = $(this);
+                if ($t.find('.matching-box-text').text().trim() === termText
+                        && String($t.data('match')).trim() === defHash) {
+                    resolvedTerm = $t;
+                    return false; // break
+                }
+            });
+
+            if (resolvedTerm) {
+                resolvedTerm.attr('data-match', expectedHash).data('match', expectedHash);
+                markMatch(termBox, defBox);
+            } else {
+                markIncorrect(termBox, defBox);
+            }
         }
     }
 

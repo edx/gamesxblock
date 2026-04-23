@@ -1,8 +1,7 @@
 """
 Tests for flashcards and matching handlers.
 """
-import json
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from django.test import TestCase
 from faker import Faker
 from xblock.field_data import DictFieldData
@@ -65,44 +64,16 @@ class TestMatchingHandlers(TestCase):
         mock_resource_string.return_value = b'<div>{{ total_pages }}</div>'
         # Add enough cards to create multiple pages (6 cards per page by default)
         cards = []
-        for i in range(15):
-            cards.append({CARD_FIELD.TERM: self.fake.word(), CARD_FIELD.DEFINITION: self.fake.sentence()})
+        for _ in range(15):
+            cards.append({
+                CARD_FIELD.TERM: self.fake.word(),
+                CARD_FIELD.DEFINITION: self.fake.sentence()
+                })
         self.xblock.cards = cards
 
         frag = MatchingHandlers.student_view(self.xblock)
 
         self.assertIsNotNone(frag)
-
-    # Tests for get_matching_key_mapping
-    def test_get_matching_key_mapping_success(self):
-        """Test getting matching key mapping with valid encrypted data."""
-        from games.handlers.common import CommonHandlers
-
-        key = CommonHandlers.generate_encryption_key(self.xblock)
-        test_data = [self.fake.word(), self.fake.word()]
-        encrypted = CommonHandlers.encrypt_data(test_data, key)
-
-        data = {'matching_key': encrypted}
-        result = MatchingHandlers.get_matching_key_mapping(self.xblock, data)
-
-        self.assertTrue(result['success'])
-        self.assertEqual(result['data'], test_data)
-
-    def test_get_matching_key_mapping_missing_key(self):
-        """Test get_matching_key_mapping fails when key is missing."""
-        data = {}
-        result = MatchingHandlers.get_matching_key_mapping(self.xblock, data)
-
-        self.assertFalse(result['success'])
-        self.assertIn('Missing matching_key', result['error'])
-
-    def test_get_matching_key_mapping_invalid_encryption(self):
-        """Test get_matching_key_mapping fails with invalid encrypted data."""
-        data = {'matching_key': self.fake.sha256()}
-        result = MatchingHandlers.get_matching_key_mapping(self.xblock, data)
-
-        self.assertFalse(result['success'])
-        self.assertIn('Failed to decrypt', result['error'])
 
     # Tests for refresh_game
     @patch.object(MatchingHandlers, 'student_view')
