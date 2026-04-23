@@ -123,11 +123,6 @@ class GamesXBlock(XBlock):
         """Complete the matching game and compare the user's time to the best_time field."""
         return MatchingHandlers.complete_matching_game(self, data, suffix)
 
-    @XBlock.json_handler
-    def start_matching_game(self, data, suffix=""):
-        """Decrypt and return the key mapping for matching game validation."""
-        return MatchingHandlers.get_matching_key_mapping(self, data, suffix)
-
     @XBlock.handler
     def refresh_game(self, request, suffix=""):
         """Refresh the game view with new shuffled data."""

@@ -8,6 +8,7 @@ import json
 from unittest.mock import Mock, patch
 import pytest
 from xblock.field_data import DictFieldData
+from xblock.fields import Scope
 from xblock.test.tools import TestRuntime
 
 from games.games import GamesXBlock
@@ -215,26 +216,6 @@ class TestGamesXBlockHandlers:
         # Result is a Response object
         assert result.status == '200 OK'
 
-    @patch('games.handlers.matching.MatchingHandlers.get_matching_key_mapping')
-    def test_start_matching_game_handler(self, mock_handler):
-        """Test start_matching_game handler delegates to MatchingHandlers."""
-        mock_handler.return_value = {
-            'success': True,
-            'key_mapping': {},
-        }
-
-        # Create mock request with method and body attributes
-        mock_request = Mock()
-        mock_request.method = 'POST'
-        mock_request.body = json.dumps({}).encode('utf-8')
-
-        result = self.block.start_matching_game(mock_request, '')
-
-        # Verify the handler was called
-        mock_handler.assert_called_once()
-        # Result is a Response object
-        assert result.status == '200 OK'
-
 
 @pytest.mark.django_db
 class TestGamesXBlockFieldScopes:
@@ -254,30 +235,24 @@ class TestGamesXBlockFieldScopes:
 
     def test_title_is_content_scoped(self):
         """Test that title field has content scope."""
-        from xblock.fields import Scope
         assert self.block.fields['title'].scope == Scope.content
 
     def test_cards_is_content_scoped(self):
         """Test that cards field has content scope."""
-        from xblock.fields import Scope
         assert self.block.fields['cards'].scope == Scope.content
 
     def test_best_time_is_user_state_scoped(self):
         """Test that best_time field has user_state scope."""
-        from xblock.fields import Scope
         assert self.block.fields['best_time'].scope == Scope.user_state
 
     def test_game_type_is_settings_scoped(self):
         """Test that game_type field has settings scope."""
-        from xblock.fields import Scope
         assert self.block.fields['game_type'].scope == Scope.settings
 
     def test_is_shuffled_is_settings_scoped(self):
         """Test that is_shuffled field has settings scope."""
-        from xblock.fields import Scope
         assert self.block.fields['is_shuffled'].scope == Scope.settings
 
     def test_has_timer_is_settings_scoped(self):
         """Test that has_timer field has settings scope."""
-        from xblock.fields import Scope
         assert self.block.fields['has_timer'].scope == Scope.settings
