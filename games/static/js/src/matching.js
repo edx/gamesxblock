@@ -31,6 +31,7 @@ function GamesXBlockMatchingInit(runtime, element) {
 
     let timerInterval = null;
     let timeSeconds = 0;
+    const isPreviewMode = new URLSearchParams(window.location.search).get('preview') === '1';
 
     function formatTime(seconds) {
         const hours = Math.floor(seconds / 3600);
@@ -60,6 +61,45 @@ function GamesXBlockMatchingInit(runtime, element) {
     }
 
     function refreshGame() {
+        if (isPreviewMode) {
+            currentPageIndex = 0;
+            matchCount = 0;
+            firstSelection = null;
+            timeSeconds = 0;
+            stopTimer();
+            $('.matching-end-screen', element).removeClass('active');
+            $('.matching-new-best', element).removeClass('active');
+            $('.matching-grid', element).show().addClass('active');
+            $('.matching-footer', element).show().addClass('active');
+            $('#matching-timer', element).text('0:00');
+            const page = allPages[0];
+            currentPagePairs = page.left_items.length;
+            updateProgress();
+            $('.matching-column-left', element).empty();
+            $('.matching-column-right', element).empty();
+            page.left_items.forEach(function(item) {
+                const wrapper = $('<div class="matching-box-wrapper"></div>');
+                const box = $('<div class="matching-box"></div>')
+                    .attr('data-item-type', 'term').attr('data-match', item.match)
+                    .attr('title', item.text).attr('role', 'button').attr('tabindex', '0');
+                box.append($('<span class="matching-box-text"></span>').text(item.text));
+                wrapper.append(box);
+                $('.matching-column-left', element).append(wrapper);
+            });
+            page.right_items.forEach(function(item) {
+                const wrapper = $('<div class="matching-box-wrapper"></div>');
+                const box = $('<div class="matching-box"></div>')
+                    .attr('data-item-type', 'definition').attr('data-hash', item.hash)
+                    .attr('title', item.text).attr('role', 'button').attr('tabindex', '0');
+                box.append($('<span class="matching-box-text"></span>').text(item.text));
+                wrapper.append(box);
+                $('.matching-column-right', element).append(wrapper);
+            });
+            attachBoxClickHandlers();
+            if (has_timer) { startTimer(); }
+            $('.matching-box', element).first().focus();
+            return;
+        }
         $.ajax({
             type: 'GET',
             url: runtime.handlerUrl(element, 'refresh_game'),
@@ -272,6 +312,20 @@ function GamesXBlockMatchingInit(runtime, element) {
             $('.matching-prev-best', element).remove();
             $('.matching-grid', element).remove();
             $('.matching-footer', element).remove();
+            if (typeof GamesConfetti !== 'undefined') {
+                GamesConfetti.trigger($('.confetti-container', element), 20);
+            }
+            announce('Congratulations! You matched all items.');
+            $('.matching-end-screen-content', element).focus();
+            return;
+        }
+
+        if (isPreviewMode) {
+            $('.matching-end-screen', element).addClass('active');
+            $('.matching-new-best', element).addClass('active');
+            $('.matching-grid', element).hide();
+            $('.matching-footer', element).hide();
+            $('#matching-current-result', element).text(formatTime(timeSeconds));
             if (typeof GamesConfetti !== 'undefined') {
                 GamesConfetti.trigger($('.confetti-container', element), 20);
             }

@@ -435,9 +435,7 @@
 }
 
 .matching-box:focus-visible {
-    outline: 2px solid var(--primary-500, #00262B);
-    outline-offset: 2px;
-    box-shadow: 0 0 0 4px rgba(0, 38, 43, 0.2);
+    outline: none;
 }
 
 .matching-end-screen-content:focus {
