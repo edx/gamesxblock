@@ -136,7 +136,13 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
         $cardWrapper.addClass('active');
         $footer.addClass('active');
         renderCard();
-        $card.focus();
+        // preventScroll keeps keyboard focus on the card without scrolling
+        // the unit page (LP-859). Fall back to jQuery focus if unsupported.
+        if ($card[0] && $card[0].focus) {
+            $card[0].focus({ preventScroll: true });
+        } else {
+            $card.focus();
+        }
     }
 
     // Event handlers
@@ -185,9 +191,10 @@ function GamesXBlockFlashcardsInit(runtime, element, cards) {
         }
     });
 
-    // Focus the start button on load and announce the game
+    // Announce the game on load. Do NOT focus the start button here:
+    // calling .focus() on an off-screen element scrolls the unit page down
+    // to the flashcards (LP-859). Keyboard users reach Start by tabbing.
     setTimeout(function() {
-        $startButton.focus();
         announce('Flashcard game. Press Start to begin.');
     }, 300);
 
