@@ -66,3 +66,24 @@ class TestFlashcardsHandlers(TestCase):
 
         self.assertIsNotNone(frag)
         self.assertIn('2', frag.content)
+
+
+class TestFlashcardsAutoscrollRegression(TestCase):
+    """LP-859: flashcards must not auto-focus the start button on load,
+    which scrolled the unit page down to the flashcards."""
+
+    def _read_js(self):
+        import pkg_resources
+        return pkg_resources.resource_string(
+            "games.handlers.flashcards", "../static/js/src/flashcards.js"
+        ).decode("utf-8")
+
+    def test_no_onload_start_button_focus(self):
+        """The init setTimeout must not call $startButton.focus() (LP-859)."""
+        js = self._read_js()
+        self.assertNotIn("$startButton.focus()", js)
+
+    def test_onload_announcement_retained(self):
+        """Screen-reader announcement on load must remain."""
+        js = self._read_js()
+        self.assertIn("Flashcard game. Press Start to begin.", js)
