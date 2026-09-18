@@ -164,3 +164,36 @@ class TestDeleteImage:
         mock_storage.exists.assert_called_once_with(special_key)
         mock_storage.delete.assert_called_once_with(special_key)
         assert result is True
+
+
+class TestReadResource:
+    """read_resource loads the block's bundled static files without pkg_resources."""
+
+    def test_reads_a_bundled_template(self):
+        from games.utils import read_resource
+
+        html = read_resource("static/html/flashcards.html")
+        assert "<" in html and len(html) > 100
+
+    def test_reads_every_file_the_views_need(self):
+        from games.utils import read_resource
+
+        for path in (
+            "static/html/flashcards.html",
+            "static/css/flashcards.css",
+            "static/js/src/flashcards.js",
+            "static/html/matching.html",
+            "static/css/matching.css",
+            "static/css/confetti.css",
+            "static/js/src/matching.js",
+            "static/js/src/confetti.js",
+        ):
+            assert read_resource(path), path
+
+    def test_missing_file_raises(self):
+        import pytest
+
+        from games.utils import read_resource
+
+        with pytest.raises(FileNotFoundError):
+            read_resource("static/html/does-not-exist.html")

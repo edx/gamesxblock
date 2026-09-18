@@ -1,6 +1,5 @@
 """An XBlock providing gamification capabilities."""
 
-import pkg_resources
 from django.utils.translation import gettext_lazy as _
 from xblock.core import XBlock
 from xblock.fields import Boolean, Integer, List, Scope, String
@@ -67,11 +66,6 @@ class GamesXBlock(XBlock):
         help=_("Whether the game should have a timer"),
     )
 
-    def resource_string(self, path):
-        """Handy helper for getting resources from our kit."""
-        data = pkg_resources.resource_string(__name__, path)
-        return data.decode("utf8")
-
     def get_mode(self):
         """Detect if in preview/author mode."""
         if hasattr(self.runtime, 'is_author_mode') and self.runtime.is_author_mode:
@@ -109,7 +103,7 @@ class GamesXBlock(XBlock):
     def delete_image_handler(self, data, suffix=""):
         """
         Delete an image by storage key.
-        Expected: { "key": "gamesxblock/<block_id>/<hash>.ext" }
+        Expected: { "key": "games/<block_id>/<hash>.ext" }
         """
         return CommonHandlers.delete_image_handler(self, data, suffix)
 

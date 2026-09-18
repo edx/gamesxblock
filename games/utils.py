@@ -3,6 +3,8 @@ Utility methods for xblock
 """
 
 import logging
+from functools import lru_cache
+from importlib.resources import files
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -10,6 +12,18 @@ from django.core.files.storage import default_storage
 from django.utils.module_loading import import_string
 
 log = logging.getLogger(__name__)
+
+
+@lru_cache(maxsize=None)
+def read_resource(path):
+    """
+    Return the text of a file bundled with this package, e.g.
+    ``read_resource("static/html/flashcards.html")``.
+
+    Paths are relative to the ``games`` package. This replaces
+    ``pkg_resources.resource_string``, which setuptools no longer ships.
+    """
+    return files("games").joinpath(path).read_text(encoding="utf8")
 
 
 def get_gamesxblock_storage():

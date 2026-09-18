@@ -123,6 +123,27 @@ class TestCommonHandlers(TestCase):
         self.assertEqual(response_data['filename'], filename)
 
     @patch('games.handlers.common.get_gamesxblock_storage')
+    def test_upload_image_returns_the_key_storage_used(self, mock_get_storage):
+        """Storage may rename on collision; the key handed back must be the real one."""
+        mock_storage = Mock()
+        mock_storage.save.return_value = f"games/{self.scope_ids.usage_id.block_id}/renamed_by_storage.png"
+        mock_storage.url.return_value = "http://example.com/renamed_by_storage.png"
+        mock_get_storage.return_value = mock_storage
+        mock_file = Mock()
+        mock_file.read.return_value = b"bytes"
+        upload = Mock()
+        upload.file = mock_file
+        upload.filename = "image.png"
+        request = Mock()
+        request.params = {"file": upload}
+
+        response = CommonHandlers.upload_image(self.xblock, request)
+
+        body = json.loads(response.body)
+        self.assertTrue(body["success"])
+        self.assertEqual(body["file_path"], mock_storage.save.return_value)
+
+    @patch('games.handlers.common.get_gamesxblock_storage')
     def test_upload_image_no_extension(self, mock_get_storage):
         """Test upload fails when file has no extension."""
         mock_file_obj = Mock()
@@ -254,13 +275,27 @@ class TestCommonHandlers(TestCase):
         mock_storage = Mock()
         mock_get_storage.return_value = mock_storage
 
-        image_key = self.fake.file_path(extension='jpg')
+        image_key = f"games/{self.scope_ids.usage_id.block_id}/{self.fake.md5()}.jpg"
         data = {'key': image_key}
         result = CommonHandlers.delete_image_handler(self.xblock, data)
 
         self.assertTrue(result['success'])
         self.assertEqual(result['key'], image_key)
         mock_delete.assert_called_once_with(mock_storage, image_key)
+
+    @patch('games.handlers.common.get_gamesxblock_storage')
+    @patch('games.handlers.common.delete_image')
+    def test_delete_image_handler_rejects_key_of_another_block(self, mock_delete, mock_get_storage):
+        """The bucket is shared platform-wide; only this block's own keys may be deleted."""
+        for bad_key in (
+            "games/otherblock/abc.jpg",
+            f"games/{self.scope_ids.usage_id.block_id}/../abc.jpg",
+            f"games/{self.scope_ids.usage_id.block_id}/notes.txt",
+            self.fake.file_path(extension='jpg'),
+        ):
+            result = CommonHandlers.delete_image_handler(self.xblock, {'key': bad_key})
+            self.assertFalse(result['success'], bad_key)
+        mock_delete.assert_not_called()
 
     @patch('games.handlers.common.get_gamesxblock_storage')
     def test_delete_image_handler_missing_key(self, mock_get_storage):
