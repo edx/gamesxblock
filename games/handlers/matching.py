@@ -9,11 +9,11 @@ import hmac as _hmac
 import random
 import secrets
 
-import pkg_resources
 from xblock.core import Response
 from django.template import Context, Template
 from web_fragments.fragment import Fragment
 from ..constants import CONFIG, DEFAULT
+from ..utils import read_resource
 
 
 class MatchingHandlers:
@@ -62,32 +62,22 @@ class MatchingHandlers:
             "block_id": xblock.scope_ids.usage_id.block_id,
         }
 
-        template_str = pkg_resources.resource_string(
-            __name__, "../static/html/matching.html"
-        ).decode("utf8")
+        template_str = read_resource("static/html/matching.html")
         template = Template(template_str)
         html = template.render(Context(template_context))
 
         frag = Fragment(html)
         frag.add_css(
-            pkg_resources.resource_string(
-                __name__, "../static/css/matching.css"
-            ).decode("utf8")
+            read_resource("static/css/matching.css")
         )
         frag.add_css(
-            pkg_resources.resource_string(
-                __name__, "../static/css/confetti.css"
-            ).decode("utf8")
+            read_resource("static/css/confetti.css")
         )
         frag.add_javascript(
-            pkg_resources.resource_string(
-                __name__, "../static/js/src/matching.js"
-            ).decode("utf8")
+            read_resource("static/js/src/matching.js")
         )
         frag.add_javascript(
-            pkg_resources.resource_string(
-                __name__, "../static/js/src/confetti.js"
-            ).decode("utf8")
+            read_resource("static/js/src/confetti.js")
         )
         frag.initialize_js('GamesXBlockMatchingInit')
         return frag

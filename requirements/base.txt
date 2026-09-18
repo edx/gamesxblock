@@ -1,9 +1,14 @@
 # Base requirements for Games XBlock
 # These are the minimum requirements to run the XBlock
+#
+# Minimums only, no exact pins: the package has to install alongside whichever
+# edx-toggles and django-waffle the platform ships (release/ulmo has
+# edx-toggles 5.4.1, master has 6.0.0), and an exact pin would force a
+# downgrade of a platform dependency.
 
 XBlock>=1.2.0
 web-fragments>=0.3.0
 Django>=2.2
-django-waffle==5.0.0
-edx-toggles==5.4.1
+django-waffle>=5.0.0
+edx-toggles>=5.4.1
 cryptography>=3.4.8

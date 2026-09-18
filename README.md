@@ -35,12 +35,12 @@ An XBlock for adding interactive **Flashcards** and **Matching** games to edX co
 
 | Dependency | Version |
 |------------|---------|
-| Python | 3.8+ |
+| Python | 3.9+ |
 | Django | 2.2+ |
 | XBlock | 1.2.0+ |
 | web-fragments | 0.3.0+ |
-| django-waffle | 5.0.0 |
-| edx-toggles | 5.4.1 |
+| django-waffle | 5.0.0+ |
+| edx-toggles | 5.4.1+ |
 | cryptography | 3.4.8+ |
 
 ---

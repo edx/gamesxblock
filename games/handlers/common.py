@@ -144,7 +144,7 @@ class CommonHandlers:
                     "success": True,
                     "url": file_url,
                     "filename": file_name,
-                    "file_path": file_path,
+                    "file_path": saved_path,
                 }
             )
         except Exception as e:
@@ -154,7 +154,7 @@ class CommonHandlers:
     def delete_image_handler(self, data, suffix=""):
         """
         Delete an image by storage key.
-        Expected: { "key": "gamesxblock/<block_id>/<hash>.ext" }
+        Expected: { "key": "games/<block_id>/<hash>.ext" }
         """
         key = data.get("key")
         if not key:
@@ -167,20 +167,45 @@ class CommonHandlers:
             return {"success": False, "error": str(e)}
 
     @staticmethod
+    def own_storage_key(xblock, key):
+        """
+        Return ``key`` only if it is a storage key this block created through
+        ``upload_image`` (``<UPLOAD.PATH_PREFIX>/<block_id>/<file>``); otherwise "".
+
+        The client supplies these keys and they are meant to drive a later
+        cleanup/delete, so a key pointing at another block's file (or any
+        arbitrary storage path) must not be persisted.
+        """
+        if not isinstance(key, str) or not key:
+            return ""
+        prefix = f"{UPLOAD.PATH_PREFIX}/{xblock.scope_ids.usage_id.block_id}/"
+        name = key[len(prefix):]
+        if not key.startswith(prefix) or not name or "/" in name or "\\" in name or name in (".", ".."):
+            return ""
+        return key
+
+    @staticmethod
     def save_settings(xblock, data, suffix=""):
         """
         Save game type, shuffle setting, and all cards in one API call.
         Expected data format:
         {
+            'display_name': 'Block title',
             'game_type': 'flashcards' or 'matching',
             'is_shuffled': true or false,
             'has_timer': true or false,
             'cards': [
                 {
                     'term': 'Term 1',
-                    'term_image': 'http://...',
                     'definition': 'Definition 1',
-                    'definition_image': 'http://...'
+                    'order': 1,
+                    'card_key': 'uuid (assigned here if missing)',
+                    'term_image': 'http://...',
+                    'term_image_path': 'games/<block_id>/<hash>.ext',
+                    'term_image_alt': 'alt text',
+                    'definition_image': 'http://...',
+                    'definition_image_path': 'games/<block_id>/<hash>.ext',
+                    'definition_image_alt': 'alt text'
                 },
                 ...
             ]
@@ -219,6 +244,15 @@ class CommonHandlers:
                         ),
                         CARD_FIELD.TERM_IMAGE_ALT: card.get(CARD_FIELD.TERM_IMAGE_ALT, ""),
                         CARD_FIELD.DEFINITION_IMAGE_ALT: card.get(CARD_FIELD.DEFINITION_IMAGE_ALT, ""),
+                        # Storage keys: where each image's file lives, as opposed to
+                        # the URL it is shown from. Kept so the block knows which file
+                        # belongs to a card (a cleanup of unused files needs that).
+                        CARD_FIELD.TERM_IMAGE_PATH: CommonHandlers.own_storage_key(
+                            xblock, card.get(CARD_FIELD.TERM_IMAGE_PATH, "")
+                        ),
+                        CARD_FIELD.DEFINITION_IMAGE_PATH: CommonHandlers.own_storage_key(
+                            xblock, card.get(CARD_FIELD.DEFINITION_IMAGE_PATH, "")
+                        ),
                     }
                 )
 
