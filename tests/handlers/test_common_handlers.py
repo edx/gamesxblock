@@ -123,6 +123,27 @@ class TestCommonHandlers(TestCase):
         self.assertEqual(response_data['filename'], filename)
 
     @patch('games.handlers.common.get_gamesxblock_storage')
+    def test_upload_image_returns_the_key_storage_used(self, mock_get_storage):
+        """Storage may rename on collision; the key handed back must be the real one."""
+        mock_storage = Mock()
+        mock_storage.save.return_value = f"games/{self.scope_ids.usage_id.block_id}/renamed_by_storage.png"
+        mock_storage.url.return_value = "http://example.com/renamed_by_storage.png"
+        mock_get_storage.return_value = mock_storage
+        mock_file = Mock()
+        mock_file.read.return_value = b"bytes"
+        upload = Mock()
+        upload.file = mock_file
+        upload.filename = "image.png"
+        request = Mock()
+        request.params = {"file": upload}
+
+        response = CommonHandlers.upload_image(self.xblock, request)
+
+        body = json.loads(response.body)
+        self.assertTrue(body["success"])
+        self.assertEqual(body["file_path"], mock_storage.save.return_value)
+
+    @patch('games.handlers.common.get_gamesxblock_storage')
     def test_upload_image_no_extension(self, mock_get_storage):
         """Test upload fails when file has no extension."""
         mock_file_obj = Mock()

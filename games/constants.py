@@ -36,6 +36,8 @@ class CARD_FIELD:
     ORDER = "order"
     TERM_IMAGE_ALT = "term_image_alt"
     DEFINITION_IMAGE_ALT = "definition_image_alt"
+    TERM_IMAGE_PATH = "term_image_path"
+    DEFINITION_IMAGE_PATH = "definition_image_path"
 
 
 class CONTAINER_TYPE:

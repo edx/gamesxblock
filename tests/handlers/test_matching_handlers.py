@@ -37,20 +37,20 @@ class TestMatchingHandlers(TestCase):
         self.xblock = GamesXBlock(self.runtime, self.field_data, self.scope_ids)
 
     # Tests for student_view rendering
-    @patch('games.handlers.matching.pkg_resources.resource_string')
-    def test_student_view_renders_fragment(self, mock_resource_string):
+    @patch('games.handlers.matching.read_resource')
+    def test_student_view_renders_fragment(self, mock_read_resource):
         """Test student view returns a fragment."""
-        mock_resource_string.return_value = b'<div>{{ title }}</div>'
+        mock_read_resource.return_value = '<div>{{ title }}</div>'
 
         frag = MatchingHandlers.student_view(self.xblock)
 
         self.assertIsNotNone(frag)
         self.assertIn(self.title, frag.content)
 
-    @patch('games.handlers.matching.pkg_resources.resource_string')
-    def test_student_view_with_shuffled_cards(self, mock_resource_string):
+    @patch('games.handlers.matching.read_resource')
+    def test_student_view_with_shuffled_cards(self, mock_read_resource):
         """Test student view with shuffled cards."""
-        mock_resource_string.return_value = b'<div>{{ list_length }}</div>'
+        mock_read_resource.return_value = '<div>{{ list_length }}</div>'
         self.xblock.is_shuffled = True
 
         frag = MatchingHandlers.student_view(self.xblock)
@@ -58,10 +58,10 @@ class TestMatchingHandlers(TestCase):
         self.assertIsNotNone(frag)
         self.assertIn('2', frag.content)
 
-    @patch('games.handlers.matching.pkg_resources.resource_string')
-    def test_student_view_with_multiple_pages(self, mock_resource_string):
+    @patch('games.handlers.matching.read_resource')
+    def test_student_view_with_multiple_pages(self, mock_read_resource):
         """Test student view with multiple pages of cards."""
-        mock_resource_string.return_value = b'<div>{{ total_pages }}</div>'
+        mock_read_resource.return_value = '<div>{{ total_pages }}</div>'
         # Add enough cards to create multiple pages (6 cards per page by default)
         cards = []
         for _ in range(15):
