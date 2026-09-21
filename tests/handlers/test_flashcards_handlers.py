@@ -11,6 +11,7 @@ from xblock.fields import ScopeIds
 from games.games import GamesXBlock
 from games.handlers.flashcards import FlashcardsHandlers
 from games.constants import GAME_TYPE, CARD_FIELD
+from games.utils import read_resource
 
 
 class TestFlashcardsHandlers(TestCase):
@@ -35,20 +36,20 @@ class TestFlashcardsHandlers(TestCase):
         self.xblock = GamesXBlock(self.runtime, self.field_data, self.scope_ids)
 
     # Tests for student_view rendering
-    @patch('games.handlers.flashcards.pkg_resources.resource_string')
-    def test_student_view_renders_fragment(self, mock_resource_string):
+    @patch('games.handlers.flashcards.read_resource')
+    def test_student_view_renders_fragment(self, mock_read_resource):
         """Test student view returns a fragment with cards."""
-        mock_resource_string.return_value = b'<div>{{ title }}</div>'
+        mock_read_resource.return_value = '<div>{{ title }}</div>'
 
         frag = FlashcardsHandlers.student_view(self.xblock)
 
         self.assertIsNotNone(frag)
         self.assertIn(self.title, frag.content)
 
-    @patch('games.handlers.flashcards.pkg_resources.resource_string')
-    def test_student_view_with_no_cards(self, mock_resource_string):
+    @patch('games.handlers.flashcards.read_resource')
+    def test_student_view_with_no_cards(self, mock_read_resource):
         """Test student view with no cards."""
-        mock_resource_string.return_value = b'<div>{{ list_length }}</div>'
+        mock_read_resource.return_value = '<div>{{ list_length }}</div>'
         self.xblock.cards = []
 
         frag = FlashcardsHandlers.student_view(self.xblock)
@@ -56,10 +57,10 @@ class TestFlashcardsHandlers(TestCase):
         self.assertIsNotNone(frag)
         self.assertIn('0', frag.content)
 
-    @patch('games.handlers.flashcards.pkg_resources.resource_string')
-    def test_student_view_with_shuffled_cards(self, mock_resource_string):
+    @patch('games.handlers.flashcards.read_resource')
+    def test_student_view_with_shuffled_cards(self, mock_read_resource):
         """Test student view with shuffled cards."""
-        mock_resource_string.return_value = b'<div>{{ list_length }}</div>'
+        mock_read_resource.return_value = '<div>{{ list_length }}</div>'
         self.xblock.is_shuffled = True
 
         frag = FlashcardsHandlers.student_view(self.xblock)
@@ -73,10 +74,7 @@ class TestFlashcardsAutoscrollRegression(TestCase):
     which scrolled the unit page down to the flashcards."""
 
     def _read_js(self):
-        import pkg_resources
-        return pkg_resources.resource_string(
-            "games.handlers.flashcards", "../static/js/src/flashcards.js"
-        ).decode("utf-8")
+        return read_resource("static/js/src/flashcards.js")
 
     def test_no_onload_start_button_focus(self):
         """The init setTimeout must not call $startButton.focus() (LP-859)."""

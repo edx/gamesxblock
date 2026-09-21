@@ -7,11 +7,11 @@ import base64
 import json
 import string
 
-import pkg_resources
 from django.template import Context, Template
 from web_fragments.fragment import Fragment
 
 from ..constants import CARD_FIELD, CONFIG, DEFAULT
+from ..utils import read_resource
 from .common import CommonHandlers
 
 
@@ -94,22 +94,16 @@ class FlashcardsHandlers:
             "data_element_id": data_element_id,
         }
 
-        template_str = pkg_resources.resource_string(
-            __name__, "../static/html/flashcards.html"
-        ).decode("utf8")
+        template_str = read_resource("static/html/flashcards.html")
         template = Template(template_str)
         html = template.render(Context(template_context))
 
         frag = Fragment(html)
         frag.add_css(
-            pkg_resources.resource_string(__name__, "../static/css/flashcards.css").decode(
-                "utf8"
-            )
+            read_resource("static/css/flashcards.css")
         )
         frag.add_javascript(
-            pkg_resources.resource_string(
-                __name__, "../static/js/src/flashcards.js"
-            ).decode("utf8")
+            read_resource("static/js/src/flashcards.js")
         )
         frag.add_javascript(obf_decoder)
         frag.initialize_js(init_function_name)

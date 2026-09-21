@@ -123,14 +123,16 @@ class CommonHandlers:
                     },
                     status=400,
                 )
-            _, ext = file_name.rsplit(".", 1)
+            _stem, ext = file_name.rsplit(".", 1)
             ext = ext.lower()
-            allowed_exts = ["jpg", "jpeg", "png", "gif", "webp", "svg"]
-            if ext not in allowed_exts:
+            if ext not in UPLOAD.ALLOWED_EXTENSIONS:
                 return Response(
                     json_body={
                         "success": False,
-                        "error": f"Unsupported file type '.{ext}'. Allowed: {', '.join(sorted(allowed_exts))}",
+                        "error": (
+                            f"Unsupported file type '.{ext}'. "
+                            f"Allowed: {', '.join(sorted(UPLOAD.ALLOWED_EXTENSIONS))}"
+                        ),
                     },
                     status=400,
                 )
@@ -144,27 +146,64 @@ class CommonHandlers:
                     "success": True,
                     "url": file_url,
                     "filename": file_name,
-                    "file_path": file_path,
+                    "file_path": saved_path,
                 }
             )
         except Exception as e:
             return Response(json_body={"success": False, "error": str(e)}, status=400)
 
     @staticmethod
-    def delete_image_handler(self, data, suffix=""):
+    def delete_image_handler(xblock, data, suffix=""):
         """
         Delete an image by storage key.
-        Expected: { "key": "gamesxblock/<block_id>/<hash>.ext" }
+        Expected: { "key": "games/<block_id>/<hash>.ext" }
+
+        Only keys this block created through ``upload_image`` are accepted; the
+        storage bucket is shared platform-wide.
         """
-        key = data.get("key")
-        if not key:
+        raw_key = data.get("key")
+        if not raw_key:
             return {"success": False, "error": "Missing key"}
+        key = CommonHandlers.own_storage_key(xblock, raw_key)
+        if not key:
+            return {"success": False, "error": _("Key does not belong to this block")}
         try:
             storage = get_gamesxblock_storage()
             is_deleted = delete_image(storage, key)
             return {"success": is_deleted, "key": key}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
+        except Exception:  # pylint: disable=broad-exception-caught
+            return {"success": False, "error": _("Delete failed")}
+
+    @staticmethod
+    def own_storage_key(xblock, key):
+        """
+        Return ``key`` only if it is a storage key this block created through
+        ``upload_image`` (``<UPLOAD.PATH_PREFIX>/<block_id>/<file>``); otherwise "".
+
+        The client supplies these keys and they are meant to drive a later
+        cleanup/delete, so a key pointing at another block's file (or any
+        arbitrary storage path) must not be persisted.
+        """
+        if not isinstance(key, str) or not key:
+            return ""
+        prefix = f"{UPLOAD.PATH_PREFIX}/{xblock.scope_ids.usage_id.block_id}/"
+        name = key[len(prefix):]
+        if not key.startswith(prefix) or not name or "/" in name or "\\" in name or name in (".", ".."):
+            return ""
+        if name.rsplit(".", 1)[-1].lower() not in UPLOAD.ALLOWED_EXTENSIONS:
+            return ""
+        return key
+
+    @staticmethod
+    def text_field(value, default=""):
+        """
+        Return ``value`` if it is a string, else ``default``.
+
+        Card text fields come from the client; a ``null`` or non-string value
+        stored here makes ``student_view`` raise for every learner
+        (``.strip()`` / ``.encode()`` on ``None``), so coerce at the boundary.
+        """
+        return value if isinstance(value, str) else default
 
     @staticmethod
     def save_settings(xblock, data, suffix=""):
@@ -172,15 +211,22 @@ class CommonHandlers:
         Save game type, shuffle setting, and all cards in one API call.
         Expected data format:
         {
+            'display_name': 'Block title',
             'game_type': 'flashcards' or 'matching',
             'is_shuffled': true or false,
             'has_timer': true or false,
             'cards': [
                 {
                     'term': 'Term 1',
-                    'term_image': 'http://...',
                     'definition': 'Definition 1',
-                    'definition_image': 'http://...'
+                    'order': 1,
+                    'card_key': 'uuid (assigned here if missing)',
+                    'term_image': 'http://...',
+                    'term_image_path': 'games/<block_id>/<hash>.ext',
+                    'term_image_alt': 'alt text',
+                    'definition_image': 'http://...',
+                    'definition_image_path': 'games/<block_id>/<hash>.ext',
+                    'definition_image_alt': 'alt text'
                 },
                 ...
             ]
@@ -188,10 +234,16 @@ class CommonHandlers:
         """
         try:
             new_game_type = data.get("game_type", GAME_TYPE.FLASHCARDS)
+            if new_game_type not in GAME_TYPE.VALID:
+                return {"success": False, "error": _("Invalid game type")}
             new_is_shuffled = data.get("is_shuffled", DEFAULT.IS_SHUFFLED)
             new_has_timer = data.get("has_timer", DEFAULT.HAS_TIMER)
+            if not isinstance(new_is_shuffled, bool) or not isinstance(new_has_timer, bool):
+                return {"success": False, "error": _("is_shuffled and has_timer must be booleans")}
             new_cards = data.get("cards", [])
-            display_name = data.get("display_name", DEFAULT.DISPLAY_NAME)
+            if not isinstance(new_cards, list):
+                return {"success": False, "error": _("cards must be a list")}
+            display_name = CommonHandlers.text_field(data.get("display_name"), DEFAULT.DISPLAY_NAME)
 
             validated_cards = []
             for card in new_cards:
@@ -207,18 +259,27 @@ class CommonHandlers:
 
                 validated_cards.append(
                     {
-                        CARD_FIELD.TERM: card.get(CARD_FIELD.TERM, ""),
-                        CARD_FIELD.TERM_IMAGE: card.get(CARD_FIELD.TERM_IMAGE, ""),
-                        CARD_FIELD.DEFINITION: card.get(CARD_FIELD.DEFINITION, ""),
-                        CARD_FIELD.DEFINITION_IMAGE: card.get(
-                            CARD_FIELD.DEFINITION_IMAGE, ""
-                        ),
+                        CARD_FIELD.TERM: CommonHandlers.text_field(card.get(CARD_FIELD.TERM)),
+                        CARD_FIELD.TERM_IMAGE: CommonHandlers.text_field(card.get(CARD_FIELD.TERM_IMAGE)),
+                        CARD_FIELD.DEFINITION: CommonHandlers.text_field(card.get(CARD_FIELD.DEFINITION)),
+                        CARD_FIELD.DEFINITION_IMAGE: CommonHandlers.text_field(card.get(CARD_FIELD.DEFINITION_IMAGE)),
                         CARD_FIELD.ORDER: card.get(CARD_FIELD.ORDER, ""),
-                        CARD_FIELD.CARD_KEY: card.get(
-                            CARD_FIELD.CARD_KEY, str(uuid.uuid4())
+                        CARD_FIELD.CARD_KEY: CommonHandlers.text_field(
+                            card.get(CARD_FIELD.CARD_KEY), str(uuid.uuid4())
                         ),
-                        CARD_FIELD.TERM_IMAGE_ALT: card.get(CARD_FIELD.TERM_IMAGE_ALT, ""),
-                        CARD_FIELD.DEFINITION_IMAGE_ALT: card.get(CARD_FIELD.DEFINITION_IMAGE_ALT, ""),
+                        CARD_FIELD.TERM_IMAGE_ALT: CommonHandlers.text_field(card.get(CARD_FIELD.TERM_IMAGE_ALT)),
+                        CARD_FIELD.DEFINITION_IMAGE_ALT: CommonHandlers.text_field(
+                            card.get(CARD_FIELD.DEFINITION_IMAGE_ALT)
+                        ),
+                        # Storage keys: where each image's file lives, as opposed to
+                        # the URL it is shown from. Kept so the block knows which file
+                        # belongs to a card (a cleanup of unused files needs that).
+                        CARD_FIELD.TERM_IMAGE_PATH: CommonHandlers.own_storage_key(
+                            xblock, card.get(CARD_FIELD.TERM_IMAGE_PATH, "")
+                        ),
+                        CARD_FIELD.DEFINITION_IMAGE_PATH: CommonHandlers.own_storage_key(
+                            xblock, card.get(CARD_FIELD.DEFINITION_IMAGE_PATH, "")
+                        ),
                     }
                 )
 

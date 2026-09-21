@@ -64,14 +64,6 @@ class TestGamesXBlock:
         assert default_block.has_timer == DEFAULT.HAS_TIMER
         assert default_block.best_time is None
 
-    def test_resource_string(self):
-        """Test resource_string helper method."""
-        # This tests that the method doesn't crash
-        # Actual resource loading requires the package to be installed
-        with pytest.raises(Exception):
-            # Will raise if resource doesn't exist, which is expected in test
-            self.block.resource_string('nonexistent.txt')
-
     @patch('games.handlers.matching.MatchingHandlers.student_view')
     def test_student_view_matching(self, mock_matching_view):
         """Test student_view routes to MatchingHandlers for matching game."""
